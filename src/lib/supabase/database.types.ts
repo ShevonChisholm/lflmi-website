@@ -35,6 +35,48 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["contact_messages"]["Insert"]>;
         Relationships: [];
       };
+      church_settings: {
+        Row: {
+          id: string;
+          church_name: string;
+          tagline: Nullable<string>;
+          bio: Nullable<string>;
+          vision: Nullable<string>;
+          mission: Nullable<string>;
+          founded_year: Nullable<number>;
+          senior_pastor: Nullable<string>;
+          associate_pastor: Nullable<string>;
+          logo_url: Nullable<string>;
+          address: Nullable<string>;
+          phone: Nullable<string>;
+          email: Nullable<string>;
+          website: Nullable<string>;
+          social_links: JsonValue;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          church_name: string;
+          tagline?: Nullable<string>;
+          bio?: Nullable<string>;
+          vision?: Nullable<string>;
+          mission?: Nullable<string>;
+          founded_year?: Nullable<number>;
+          senior_pastor?: Nullable<string>;
+          associate_pastor?: Nullable<string>;
+          logo_url?: Nullable<string>;
+          address?: Nullable<string>;
+          phone?: Nullable<string>;
+          email?: Nullable<string>;
+          website?: Nullable<string>;
+          social_links?: JsonValue;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["church_settings"]["Insert"]>;
+        Relationships: [];
+      };
       content_pages: {
         Row: {
           id: string;
@@ -315,6 +357,32 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["sermons"]["Insert"]>;
+        Relationships: [];
+      };
+      service_times: {
+        Row: {
+          id: string;
+          day_of_week: string;
+          label: string;
+          time: string;
+          location: Nullable<string>;
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          day_of_week: string;
+          label: string;
+          time: string;
+          location?: Nullable<string>;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["service_times"]["Insert"]>;
         Relationships: [];
       };
       visitors: {

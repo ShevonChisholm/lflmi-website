@@ -3,6 +3,8 @@ import type {
   Event,
   Ministry,
   Sermon,
+  ServiceTime,
+  ChurchSettings,
   UUID,
 } from "@/types";
 
@@ -20,6 +22,8 @@ import {
   mapEvent,
   mapMinistry,
   mapSermon,
+  mapServiceTime,
+  mapChurchSettings,
 } from "./mappers";
 
 export interface PublicListOptions {
@@ -131,6 +135,27 @@ export const getPublishedPageBySlug = async (
 
   throwIfDataError(error, "Unable to load the published content page.");
   return data ? mapContentPage(data) : null;
+};
+
+export const getActiveServiceTimes = async (): Promise<ServiceTime[]> => {
+  const { data, error } = await supabase
+    .from("service_times")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  throwIfDataError(error, "Unable to load active service times.");
+  return (data ?? []).map(mapServiceTime);
+};
+
+export const getChurchSettings = async (): Promise<ChurchSettings | null> => {
+  const { data, error } = await supabase
+    .from("church_settings")
+    .select("*")
+    .maybeSingle();
+
+  throwIfDataError(error, "Unable to load church settings.");
+  return data ? mapChurchSettings(data) : null;
 };
 
 export const submitContactMessage = async (

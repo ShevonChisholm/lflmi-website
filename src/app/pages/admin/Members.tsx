@@ -2,21 +2,21 @@ import { useState } from "react";
 import { Search, Plus, Filter, Edit2, Mail, Phone } from "lucide-react";
 
 const members = [
-  { id: 1, name: "Emmanuel Adeyemi", initials: "EA", email: "pastor@lflmi.org", phone: "+234 802 111 2222", ministry: "Leadership", joinDate: "Jan 15, 2005", status: "Active", role: "Senior Pastor" },
-  { id: 2, name: "Yemi Adeyemi", initials: "YA", email: "yemi@lflmi.org", phone: "+234 803 222 3333", ministry: "Leadership", joinDate: "Jan 15, 2005", status: "Active", role: "Associate Pastor" },
-  { id: 3, name: "Grace Obi", initials: "GO", email: "grace.o@lflmi.org", phone: "+234 805 333 4444", ministry: "Women's Fellowship", joinDate: "Mar 3, 2008", status: "Active", role: "Deaconess" },
-  { id: 4, name: "Samuel Tunde", initials: "ST", email: "sam.t@lflmi.org", phone: "+234 806 444 5555", ministry: "Administration", joinDate: "Jun 7, 2010", status: "Active", role: "Deacon" },
-  { id: 5, name: "Kola Abiodun", initials: "KA", email: "kola.a@gmail.com", phone: "+234 809 555 6666", ministry: "Youth Ministry", joinDate: "Sep 20, 2013", status: "Active", role: "Youth Leader" },
-  { id: 6, name: "Esther Ike", initials: "EI", email: "esther.i@gmail.com", phone: "+234 811 666 7777", ministry: "Worship Arts", joinDate: "Feb 12, 2015", status: "Active", role: "Minister" },
-  { id: 7, name: "Adaeze Okonkwo", initials: "AO", email: "adaeze.o@gmail.com", phone: "+234 803 456 7890", ministry: "Children's Ministry", joinDate: "Apr 5, 2018", status: "Active", role: "Volunteer" },
-  { id: 8, name: "Chidi Nwosu", initials: "CN", email: "chidi.n@gmail.com", phone: "+234 816 789 0123", ministry: "Life Groups", joinDate: "Nov 14, 2019", status: "Active", role: "Life Group Leader" },
-  { id: 9, name: "Fatima Al-Hassan", initials: "FA", email: "fatima.ah@yahoo.com", phone: "+234 809 876 5432", ministry: "Global Missions", joinDate: "Jan 19, 2020", status: "Active", role: "Missions Coordinator" },
-  { id: 10, name: "Peter Oluwaseun", initials: "PO", email: "peter.o@yahoo.com", phone: "+234 808 654 3210", ministry: "Worship Arts", joinDate: "Mar 8, 2021", status: "Active", role: "Volunteer" },
-  { id: 11, name: "Mary Johnson", initials: "MJ", email: "mary.j@gmail.com", phone: "+234 811 234 5678", ministry: "Women's Fellowship", joinDate: "Jul 25, 2021", status: "Active", role: "Member" },
-  { id: 12, name: "Amina Bello", initials: "AB", email: "amina.b@gmail.com", phone: "+234 805 432 1098", ministry: "Children's Ministry", joinDate: "Oct 3, 2022", status: "Inactive", role: "Volunteer" },
-  { id: 13, name: "David Eze", initials: "DE", email: "david.eze@gmail.com", phone: "+234 803 123 4567", ministry: "Men's Fellowship", joinDate: "Feb 2, 2023", status: "Active", role: "Member" },
-  { id: 14, name: "James Amaka", initials: "JA", email: "james.amaka@gmail.com", phone: "+234 701 234 5678", ministry: "None", joinDate: "Jun 15, 2025", status: "New", role: "New Member" },
-  { id: 15, name: "Chibuzor Nnamdi", initials: "CN2", email: "chibu.n@outlook.com", phone: "+234 808 901 2345", ministry: "None", joinDate: "Jun 22, 2025", status: "New", role: "New Member" },
+  { id: 1, name: "Emmanuel Adeyemi", initials: "EA", email: "pastor@lflmi.org", phone: "+1 876 111 2222", ministry: "Leadership", joinDate: "Jan 15, 2005", status: "Active", role: "Senior Pastor" },
+  { id: 2, name: "Yemi Adeyemi", initials: "YA", email: "yemi@lflmi.org", phone: "+1 876 222 3333", ministry: "Leadership", joinDate: "Jan 15, 2005", status: "Active", role: "Associate Pastor" },
+  { id: 3, name: "Grace Obi", initials: "GO", email: "grace.o@lflmi.org", phone: "+1 876 333 4444", ministry: "Women's Fellowship", joinDate: "Mar 3, 2008", status: "Active", role: "Deaconess" },
+  { id: 4, name: "Samuel Tunde", initials: "ST", email: "sam.t@lflmi.org", phone: "+1 876 444 5555", ministry: "Administration", joinDate: "Jun 7, 2010", status: "Active", role: "Deacon" },
+  { id: 5, name: "Kola Abiodun", initials: "KA", email: "kola.a@gmail.com", phone: "+1 876 555 6666", ministry: "Youth Ministry", joinDate: "Sep 20, 2013", status: "Active", role: "Youth Leader" },
+  { id: 6, name: "Esther Ike", initials: "EI", email: "esther.i@gmail.com", phone: "+1 876 666 7777", ministry: "Worship Arts", joinDate: "Feb 12, 2015", status: "Active", role: "Minister" },
+  { id: 7, name: "Adaeze Okonkwo", initials: "AO", email: "adaeze.o@gmail.com", phone: "+1 876 456 7890", ministry: "Children's Ministry", joinDate: "Apr 5, 2018", status: "Active", role: "Volunteer" },
+  { id: 8, name: "Chidi Nwosu", initials: "CN", email: "chidi.n@gmail.com", phone: "+1 876 789 0123", ministry: "Life Groups", joinDate: "Nov 14, 2019", status: "Active", role: "Life Group Leader" },
+  { id: 9, name: "Fatima Al-Hassan", initials: "FA", email: "fatima.ah@yahoo.com", phone: "+1 876 876 5432", ministry: "Global Missions", joinDate: "Jan 19, 2020", status: "Active", role: "Missions Coordinator" },
+  { id: 10, name: "Peter Oluwaseun", initials: "PO", email: "peter.o@yahoo.com", phone: "+1 876 654 3210", ministry: "Worship Arts", joinDate: "Mar 8, 2021", status: "Active", role: "Volunteer" },
+  { id: 11, name: "Mary Johnson", initials: "MJ", email: "mary.j@gmail.com", phone: "+1 876 234 5678", ministry: "Women's Fellowship", joinDate: "Jul 25, 2021", status: "Active", role: "Member" },
+  { id: 12, name: "Amina Bello", initials: "AB", email: "amina.b@gmail.com", phone: "+1 876 432 1098", ministry: "Children's Ministry", joinDate: "Oct 3, 2022", status: "Inactive", role: "Volunteer" },
+  { id: 13, name: "David Eze", initials: "DE", email: "david.eze@gmail.com", phone: "+1 876 123 4567", ministry: "Men's Fellowship", joinDate: "Feb 2, 2023", status: "Active", role: "Member" },
+  { id: 14, name: "James Amaka", initials: "JA", email: "james.amaka@gmail.com", phone: "+1 876 701 2345", ministry: "None", joinDate: "Jun 15, 2025", status: "New", role: "New Member" },
+  { id: 15, name: "Chibuzor Nnamdi", initials: "CN2", email: "chibu.n@outlook.com", phone: "+1 876 901 2345", ministry: "None", joinDate: "Jun 22, 2025", status: "New", role: "New Member" },
 ];
 
 const ministries = ["All", "Leadership", "Women's Fellowship", "Youth Ministry", "Worship Arts", "Children's Ministry", "Life Groups", "Global Missions", "Men's Fellowship", "Administration", "None"];

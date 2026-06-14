@@ -6,6 +6,9 @@ import type {
   PlannedVisit,
   PrayerRequest,
   Sermon,
+  ServiceTime,
+  ChurchSettings,
+  SocialLinks,
 } from "@/types";
 
 import type { TableRow } from "../supabase/database.types";
@@ -132,6 +135,64 @@ export const mapPlannedVisit = (
   status: row.status as PlannedVisit["status"],
   source: row.source,
   notes: row.notes,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+const emptySocialLinks: SocialLinks = {
+  facebook: null,
+  instagram: null,
+  youtube: null,
+  twitter: null,
+};
+
+const mapSocialLinks = (
+  value: TableRow<"church_settings">["social_links"],
+): SocialLinks => {
+  if (!value || Array.isArray(value) || typeof value !== "object") {
+    return emptySocialLinks;
+  }
+
+  return {
+    facebook: typeof value.facebook === "string" ? value.facebook : null,
+    instagram: typeof value.instagram === "string" ? value.instagram : null,
+    youtube: typeof value.youtube === "string" ? value.youtube : null,
+    twitter: typeof value.twitter === "string" ? value.twitter : null,
+  };
+};
+
+export const mapServiceTime = (
+  row: TableRow<"service_times">,
+): ServiceTime => ({
+  id: row.id,
+  dayOfWeek: row.day_of_week,
+  label: row.label,
+  time: row.time,
+  location: row.location,
+  sortOrder: row.sort_order,
+  isActive: row.is_active,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapChurchSettings = (
+  row: TableRow<"church_settings">,
+): ChurchSettings => ({
+  id: row.id,
+  churchName: row.church_name,
+  tagline: row.tagline,
+  bio: row.bio,
+  vision: row.vision,
+  mission: row.mission,
+  foundedYear: row.founded_year,
+  seniorPastor: row.senior_pastor,
+  associatePastor: row.associate_pastor,
+  logoUrl: row.logo_url,
+  address: row.address,
+  phone: row.phone,
+  email: row.email,
+  website: row.website,
+  socialLinks: mapSocialLinks(row.social_links),
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });

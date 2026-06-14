@@ -36,8 +36,8 @@ export default function About() {
   const [churchName, setChurchName] = useState("Liberty For Living Ministries International");
   const [tagline, setTagline] = useState("Walking in freedom. Living in purpose. Together in Christ.");
   const [bio, setBio] = useState("Liberty For Living Ministries International was founded on a simple, profound conviction: that Jesus Christ came to set humanity free — and that freedom is meant to be lived out loud, together. Today, our congregation spans generations and nations, united by faith, love, and a commitment to see every person walk in their God-given destiny.");
-  const [address, setAddress] = useState("123 Liberty Way, Garki, Abuja, FCT, Nigeria");
-  const [phone, setPhone] = useState("+234 800 LIBERTY");
+  const [address, setAddress] = useState("123 Liberty Way, Kingston, Jamaica");
+  const [phone, setPhone] = useState("+1 876 555 0100");
   const [email, setEmail] = useState("hello@lflmi.org");
   const [website, setWebsite] = useState("www.lflmi.org");
   const [facebook, setFacebook] = useState("facebook.com/lflmi");

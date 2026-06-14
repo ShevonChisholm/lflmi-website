@@ -2,14 +2,14 @@ import { useState } from "react";
 import { Search, Plus, Phone, Mail, Clock, CheckCircle, XCircle, AlertCircle, Edit2 } from "lucide-react";
 
 const plannedVisits = [
-  { id: 1, name: "Ngozi Okafor", initials: "NO", email: "ngozi.o@gmail.com", phone: "+234 802 345 6789", service: "Sunday 10:30 AM", visitDate: "Jun 29, 2025", status: "Confirmed", source: "Website Form", notes: "Coming with husband. First-time visitor." },
-  { id: 2, name: "Bello Ismaila", initials: "BI", email: "bello.i@outlook.com", phone: "+234 805 678 9012", service: "Sunday 8:00 AM", visitDate: "Jun 29, 2025", status: "Pending", source: "Social Media", notes: "Reached out on Instagram. Interested in Youth Ministry." },
-  { id: 3, name: "Chioma Adesanya", initials: "CA", email: "chioma.a@gmail.com", phone: "+234 809 123 4567", service: "Sunday 10:30 AM", visitDate: "Jun 22, 2025", status: "Attended", source: "Friend Referral", notes: "Came with sister Ada. Stayed for connect lunch." },
-  { id: 4, name: "Tunde Bakare", initials: "TB", email: "tunde.b@yahoo.com", phone: "+234 806 789 0123", service: "Sunday 10:30 AM", visitDate: "Jun 22, 2025", status: "No Show", source: "Website Form", notes: "Did not respond to confirmation email sent Friday." },
-  { id: 5, name: "Halima Yusuf", initials: "HY", email: "halima.y@gmail.com", phone: "+234 811 234 5678", service: "Wednesday 7:00 PM", visitDate: "Jun 25, 2025", status: "Confirmed", source: "Phone Call", notes: "Interested specifically in midweek prayer service." },
-  { id: 6, name: "Samuel Chukwudi", initials: "SC", email: "sam.c@gmail.com", phone: "+234 803 456 7890", service: "Sunday 8:00 AM", visitDate: "Jul 6, 2025", status: "Pending", source: "Website Form", notes: "Moving to Abuja from Port Harcourt next month." },
-  { id: 7, name: "Amara Ekwueme", initials: "AE", email: "amara.e@gmail.com", phone: "+234 814 567 8901", service: "Sunday 10:30 AM", visitDate: "Jul 6, 2025", status: "Confirmed", source: "Event RSVP", notes: "RSVPed via Family Faith Night event form." },
-  { id: 8, name: "Chibuzor Nnamdi", initials: "CN", email: "chibu.n@outlook.com", phone: "+234 808 901 2345", service: "Sunday 10:30 AM", visitDate: "Jun 15, 2025", status: "Attended", source: "Social Media", notes: "Became a member the following Sunday." },
+  { id: 1, name: "Ngozi Okafor", initials: "NO", email: "ngozi.o@gmail.com", phone: "+1 876 345 6789", service: "Sunday 10:30 AM", visitDate: "Jun 29, 2025", status: "Confirmed", source: "Website Form", notes: "Coming with husband. First-time visitor." },
+  { id: 2, name: "Bello Ismaila", initials: "BI", email: "bello.i@outlook.com", phone: "+1 876 678 9012", service: "Sunday 8:00 AM", visitDate: "Jun 29, 2025", status: "Pending", source: "Social Media", notes: "Reached out on Instagram. Interested in Youth Ministry." },
+  { id: 3, name: "Chioma Adesanya", initials: "CA", email: "chioma.a@gmail.com", phone: "+1 876 123 4567", service: "Sunday 10:30 AM", visitDate: "Jun 22, 2025", status: "Attended", source: "Friend Referral", notes: "Came with sister Ada. Stayed for connect lunch." },
+  { id: 4, name: "Tunde Bakare", initials: "TB", email: "tunde.b@yahoo.com", phone: "+1 876 789 0123", service: "Sunday 10:30 AM", visitDate: "Jun 22, 2025", status: "No Show", source: "Website Form", notes: "Did not respond to confirmation email sent Friday." },
+  { id: 5, name: "Halima Yusuf", initials: "HY", email: "halima.y@gmail.com", phone: "+1 876 234 5678", service: "Wednesday 7:00 PM", visitDate: "Jun 25, 2025", status: "Confirmed", source: "Phone Call", notes: "Interested specifically in midweek prayer service." },
+  { id: 6, name: "Samuel Chukwudi", initials: "SC", email: "sam.c@gmail.com", phone: "+1 876 456 7890", service: "Sunday 8:00 AM", visitDate: "Jul 6, 2025", status: "Pending", source: "Website Form", notes: "Moving to Kingston from Montego Bay next month." },
+  { id: 7, name: "Amara Ekwueme", initials: "AE", email: "amara.e@gmail.com", phone: "+1 876 567 8901", service: "Sunday 10:30 AM", visitDate: "Jul 6, 2025", status: "Confirmed", source: "Event RSVP", notes: "RSVPed via Family Faith Night event form." },
+  { id: 8, name: "Chibuzor Nnamdi", initials: "CN", email: "chibu.n@outlook.com", phone: "+1 876 901 2345", service: "Sunday 10:30 AM", visitDate: "Jun 15, 2025", status: "Attended", source: "Social Media", notes: "Became a member the following Sunday." },
 ];
 
 const statusConfig: Record<string, { color: string; icon: typeof CheckCircle }> = {

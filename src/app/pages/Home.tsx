@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import {
   Menu, X, ChevronRight, MapPin, Clock,
   Heart, Users, BookOpen, Music, Baby, Globe,
-  Play, ArrowRight, Phone, Mail
+  Play, ArrowRight, Phone, Mail, AlertCircle
 } from "lucide-react";
 import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
+import { useHomeContent } from "@/app/hooks/useHomeContent";
 import logoImg from "@/imports/PHOTO-2025-11-20-06-26-28-removebg-preview.png";
 
 const navLinks = [
@@ -15,27 +16,6 @@ const navLinks = [
   { label: "Give", href: "#give" },
 ];
 
-const serviceTimes = [
-  { day: "Sunday", time: "8:00 AM", label: "Early Service" },
-  { day: "Sunday", time: "10:30 AM", label: "Main Service" },
-  { day: "Wednesday", time: "7:00 PM", label: "Midweek Prayer" },
-];
-
-const events = [
-  { month: "JUN", day: "22", title: "Family Faith Night", description: "A special evening of worship, games, and fellowship for the entire family.", time: "6:00 PM – 9:00 PM", location: "Main Sanctuary", tag: "Family" },
-  { month: "JUN", day: "29", title: "Baptism Sunday", description: "Celebrate new beginnings as members of our congregation take their next step of faith.", time: "10:30 AM Service", location: "Main Sanctuary", tag: "Worship" },
-  { month: "JUL", day: "5", title: "Youth Summer Retreat", description: "Three days of adventure, discipleship, and community for teens ages 13–18.", time: "Jul 5 – Jul 7", location: "Camp Freedom", tag: "Youth" },
-];
-
-const ministries = [
-  { icon: Baby, title: "Children's Ministry", desc: "Safe, fun, and faith-filled environments for kids from birth through 5th grade.", color: "#0E5AA7" },
-  { icon: Users, title: "Youth & Young Adults", desc: "Empowering the next generation to live bold, Spirit-led lives with purpose.", color: "#D7261E" },
-  { icon: Heart, title: "Women's Fellowship", desc: "A sisterhood built on prayer, authenticity, and the transforming Word of God.", color: "#0E5AA7" },
-  { icon: Globe, title: "Global Missions", desc: "Carrying the love of Christ to communities near and far around the world.", color: "#D7261E" },
-  { icon: Music, title: "Worship Arts", desc: "Serving God and the congregation through music, media, and creative expression.", color: "#0E5AA7" },
-  { icon: BookOpen, title: "Life Groups", desc: "Deeper community through mid-week small groups meeting all across the city.", color: "#D7261E" },
-];
-
 const careItems = [
   { title: "Prayer Team", desc: "Dedicated intercessors praying for submitted requests daily.", icon: Heart },
   { title: "Counseling", desc: "Professional Christian counseling available on request.", icon: Users },
@@ -43,9 +23,72 @@ const careItems = [
   { title: "Home Visitation", desc: "We come to you when you cannot come to us.", icon: MapPin },
 ];
 
+const formatTime = (time: string) => {
+  const [hours = "0", minutes = "0"] = time.split(":");
+  const date = new Date(2000, 0, 1, Number(hours), Number(minutes));
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+};
+
+const formatDate = (date: string | null, options: Intl.DateTimeFormatOptions) =>
+  date
+    ? new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Jamaica",
+        ...options,
+      }).format(new Date(date))
+    : "";
+
+const ministryIcon = (name: string) => {
+  const normalized = name.toLowerCase();
+  if (normalized.includes("child")) return Baby;
+  if (normalized.includes("worship") || normalized.includes("music")) return Music;
+  if (normalized.includes("mission")) return Globe;
+  if (normalized.includes("women") || normalized.includes("care")) return Heart;
+  if (normalized.includes("group") || normalized.includes("study")) return BookOpen;
+  return Users;
+};
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const {
+    serviceTimes: dynamicServiceTimes,
+    latestSermon,
+    events: dynamicEvents,
+    ministries: dynamicMinistries,
+    churchSettings,
+    isLoading,
+    failedSections,
+  } = useHomeContent();
+  const sundayServices = dynamicServiceTimes.filter(
+    (service) => service.dayOfWeek === "Sunday",
+  );
+  const displayServiceTimes = dynamicServiceTimes.map((service) => ({
+    ...service,
+    day: service.dayOfWeek,
+  }));
+  const displayEvents = dynamicEvents.map((event) => ({
+    ...event,
+    month: formatDate(event.startDate, { month: "short" }).toUpperCase(),
+    day: formatDate(event.startDate, { day: "numeric" }),
+    time: `${formatDate(event.startDate, { hour: "numeric", minute: "2-digit" })}${event.endDate ? ` - ${formatDate(event.endDate, { hour: "numeric", minute: "2-digit" })}` : ""}`,
+    tag: event.eventType ?? "Church",
+  }));
+  const displayMinistries = dynamicMinistries.map((ministry) => ({
+    ...ministry,
+    title: ministry.name,
+    desc: ministry.description ?? "Find community, serve others, and grow in faith.",
+    color: ministry.color ?? "#0E5AA7",
+    icon: ministryIcon(ministry.name),
+  }));
+  const yearsActive = churchSettings.foundedYear
+    ? new Date().getFullYear() - churchSettings.foundedYear
+    : 20;
+  const socialLinks = Object.entries(churchSettings.socialLinks).filter(
+    (entry): entry is [string, string] => Boolean(entry[1]),
+  );
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 50);
@@ -96,7 +139,7 @@ export default function Home() {
             <span className="w-2 h-2 rounded-full bg-[#D7261E] animate-pulse" />Welcome Home
           </div>
           <h1 className="text-6xl sm:text-7xl lg:text-[5.5rem] font-black text-white leading-[1.02] tracking-tight mb-7">Liberty.<br /><span className="text-[#ef5a50]">For Living.</span></h1>
-          <p className="text-lg sm:text-xl text-white/75 max-w-2xl mx-auto mb-12 leading-relaxed font-medium">A community of faith where every person is seen, loved, and empowered to walk in the freedom that Christ provides.</p>
+          <p className="text-lg sm:text-xl text-white/75 max-w-2xl mx-auto mb-12 leading-relaxed font-medium">{churchSettings.tagline ?? "A community of faith where every person is seen, loved, and empowered to walk in the freedom that Christ provides."}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="#visit" className="bg-[#D7261E] hover:bg-[#b81f19] text-white font-black px-9 py-4 rounded-full text-base transition-all hover:scale-105 shadow-xl shadow-red-900/40">Plan Your Visit</a>
             <a href="#sermons" className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold px-9 py-4 rounded-full text-base transition-all flex items-center gap-2.5 justify-center"><Play size={15} className="fill-white" />Watch a Sermon</a>
@@ -108,15 +151,35 @@ export default function Home() {
         </div>
       </section>
 
+      {isLoading && (
+        <div className="fixed bottom-5 right-5 z-50 rounded-full bg-white/95 dark:bg-[#111c30]/95 px-4 py-2 shadow-xl backdrop-blur-md border border-[#0E5AA7]/10">
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#0E5AA7]">
+            <span className="h-2 w-2 rounded-full bg-[#0E5AA7] animate-pulse" />
+            Loading live church updates
+          </div>
+        </div>
+      )}
+
+      {!isLoading && failedSections.length > 0 && (
+        <div className="fixed bottom-5 right-5 z-50 max-w-sm rounded-2xl bg-white/95 dark:bg-[#111c30]/95 px-4 py-3 shadow-xl backdrop-blur-md border border-[#0E5AA7]/10">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle size={16} className="text-[#D7261E] mt-0.5 shrink-0" />
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Some live content is temporarily unavailable. Showing trusted fallback content for {failedSections.join(", ")}.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* SERVICE TIMES */}
       <section className="bg-[#0E5AA7] text-white">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/15">
-          {serviceTimes.map((s) => (
-            <div key={s.label} className="flex items-center gap-4 py-6 sm:py-8 sm:px-10 first:pl-0 last:pr-0">
+          {displayServiceTimes.map((s) => (
+            <div key={s.id} className="flex items-center gap-4 py-6 sm:py-8 sm:px-10 first:pl-0 last:pr-0">
               <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0"><Clock size={18} className="opacity-80" /></div>
               <div>
                 <div className="text-[10px] font-bold tracking-widest uppercase opacity-60 mb-0.5">{s.day} — {s.label}</div>
-                <div className="text-2xl font-black">{s.time}</div>
+                <div className="text-2xl font-black">{formatTime(s.time)}</div>
               </div>
             </div>
           ))}
@@ -135,30 +198,30 @@ export default function Home() {
           </div>
           <div className="grid lg:grid-cols-5 rounded-3xl overflow-hidden shadow-2xl shadow-slate-900/10 dark:shadow-black/40">
             <div className="lg:col-span-3 relative aspect-video lg:aspect-auto min-h-72 bg-slate-800 group cursor-pointer">
-              <img src="https://images.unsplash.com/photo-1610414961792-b7fffebddd14?w=900&h=600&fit=crop&auto=format" alt="Pastor preaching on stage during evening service" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+              <img src={latestSermon.thumbnailUrl ?? "https://images.unsplash.com/photo-1610414961792-b7fffebddd14?w=900&h=600&fit=crop&auto=format"} alt={latestSermon.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-20 h-20 rounded-full bg-white/15 backdrop-blur-sm border-2 border-white/40 flex items-center justify-center group-hover:scale-110 group-hover:bg-white/25 transition-all duration-300"><Play size={28} className="fill-white text-white ml-1" /></div>
               </div>
               <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between">
-                <span className="bg-[#D7261E] text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg">June 15, 2025</span>
-                <span className="bg-black/40 backdrop-blur-sm text-white/80 text-xs font-semibold px-3 py-1.5 rounded-full">48 min</span>
+                <span className="bg-[#D7261E] text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg">{formatDate(latestSermon.sermonDate, { month: "long", day: "numeric", year: "numeric" }) || "Latest message"}</span>
+                <span className="bg-black/40 backdrop-blur-sm text-white/80 text-xs font-semibold px-3 py-1.5 rounded-full">{latestSermon.durationMinutes ? `${latestSermon.durationMinutes} min` : "Message"}</span>
               </div>
             </div>
             <div className="lg:col-span-2 bg-card p-8 lg:p-10 flex flex-col justify-center">
-              <div className="text-[#0E5AA7] text-[10px] font-black tracking-widest uppercase mb-5">Series: Walking In Freedom</div>
-              <h3 className="text-2xl lg:text-[1.75rem] font-black text-card-foreground leading-tight mb-4">"Unshackled: Living Free from Fear"</h3>
+              <div className="text-[#0E5AA7] text-[10px] font-black tracking-widest uppercase mb-5">{latestSermon.series ? `Series: ${latestSermon.series}` : "Latest Message"}</div>
+              <h3 className="text-2xl lg:text-[1.75rem] font-black text-card-foreground leading-tight mb-4">"{latestSermon.title}"</h3>
               <p className="text-muted-foreground text-sm leading-relaxed mb-7">In this powerful message, Pastor Emmanuel explores how perfect love casts out all fear — and how we can step boldly into the liberty Christ has purchased for us.</p>
               <div className="flex items-center gap-3 pb-7 border-b border-border">
                 <div className="w-11 h-11 rounded-full bg-[#0E5AA7]/10 flex items-center justify-center shrink-0"><BookOpen size={17} className="text-[#0E5AA7]" /></div>
                 <div>
-                  <div className="font-bold text-card-foreground text-sm">Pastor Emmanuel Adeyemi</div>
-                  <div className="text-muted-foreground text-xs mt-0.5">Senior Pastor, LFLMI</div>
+                  <div className="font-bold text-card-foreground text-sm">{latestSermon.preacherName ?? churchSettings.seniorPastor ?? "LFLMI Teaching Team"}</div>
+                  <div className="text-muted-foreground text-xs mt-0.5">{latestSermon.bibleText ?? "Liberty For Living Ministries International"}</div>
                 </div>
               </div>
               <div className="flex gap-3 mt-7">
-                <button className="flex-1 bg-[#0E5AA7] hover:bg-[#0a4a8a] text-white font-bold py-3 rounded-full text-sm transition-colors flex items-center justify-center gap-2"><Play size={13} className="fill-white" />Watch Now</button>
-                <button className="px-5 py-3 border-2 border-border hover:border-[#0E5AA7] hover:text-[#0E5AA7] text-foreground rounded-full text-sm font-bold transition-colors">Notes</button>
+                <a href={latestSermon.videoUrl ?? "#sermons"} className="flex-1 bg-[#0E5AA7] hover:bg-[#0a4a8a] text-white font-bold py-3 rounded-full text-sm transition-colors flex items-center justify-center gap-2"><Play size={13} className="fill-white" />Watch Now</a>
+                <a href={latestSermon.notesUrl ?? "#sermons"} className="px-5 py-3 border-2 border-border hover:border-[#0E5AA7] hover:text-[#0E5AA7] text-foreground rounded-full text-sm font-bold transition-colors">Notes</a>
               </div>
             </div>
           </div>
@@ -196,8 +259,8 @@ export default function Home() {
               </div>
               <div className="absolute -bottom-5 -left-5 lg:-left-8 bg-white dark:bg-[#111c30] rounded-2xl shadow-2xl p-5 max-w-[220px]">
                 <div className="text-[10px] font-black text-[#0E5AA7] tracking-widest uppercase mb-2">Join Us This Sunday</div>
-                <div className="font-black text-foreground text-xl leading-tight">8:00 AM<br />& 10:30 AM</div>
-                <div className="text-muted-foreground text-xs mt-2 flex items-start gap-1.5 leading-snug"><MapPin size={11} className="mt-0.5 shrink-0 text-[#D7261E]" />123 Liberty Way, Abuja, Nigeria</div>
+                <div className="font-black text-foreground text-xl leading-tight">{sundayServices.length > 0 ? sundayServices.map((service) => formatTime(service.time)).join(" & ") : "Join us this Sunday"}</div>
+                <div className="text-muted-foreground text-xs mt-2 flex items-start gap-1.5 leading-snug"><MapPin size={11} className="mt-0.5 shrink-0 text-[#D7261E]" />{churchSettings.address ?? "Contact us for directions"}</div>
               </div>
               <div className="absolute -top-4 -right-4 lg:-right-6 bg-[#D7261E] text-white rounded-2xl px-4 py-3 shadow-xl">
                 <div className="text-2xl font-black leading-none">5K+</div>
@@ -219,8 +282,8 @@ export default function Home() {
             <a href="#" className="hidden sm:flex items-center gap-1.5 text-[#0E5AA7] font-bold text-sm hover:gap-3 transition-all group">Full Calendar<ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" /></a>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {events.map((ev) => (
-              <div key={ev.title} className="group bg-card rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-slate-900/10 transition-all duration-300 hover:-translate-y-1.5">
+            {displayEvents.map((ev) => (
+              <div key={ev.id} className="group bg-card rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-slate-900/10 transition-all duration-300 hover:-translate-y-1.5">
                 <div className="bg-[#0E5AA7] px-7 pt-7 pb-10 relative overflow-hidden">
                   <span className="text-[6rem] font-black text-white/10 absolute -right-2 -top-4 select-none leading-none pointer-events-none">{ev.day}</span>
                   <div className="text-xs font-black text-white/60 tracking-widest uppercase leading-none mb-1">{ev.month}</div>
@@ -251,8 +314,8 @@ export default function Home() {
             <p className="text-muted-foreground text-lg leading-relaxed">No matter your age or season of life, there is a ministry built for you here at Liberty For Living.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {ministries.map((m) => (
-              <div key={m.title} className="group bg-card rounded-3xl p-7 hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer">
+            {displayMinistries.map((m) => (
+              <div key={m.id} className="group bg-card rounded-3xl p-7 hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6" style={{ backgroundColor: `${m.color}15` }}><m.icon size={22} style={{ color: m.color }} /></div>
                 <h3 className="text-xl font-black text-card-foreground mb-3">{m.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed mb-6">{m.desc}</p>
@@ -272,7 +335,7 @@ export default function Home() {
                 <img src="https://images.unsplash.com/photo-1528828085966-aff4e01c5f2b?w=700&h=700&fit=crop&auto=format" alt="Church congregation gathered in a spirit of praise and community" className="w-full h-full object-cover" />
               </div>
               <div className="absolute -top-5 -right-5 lg:-right-8 bg-[#D7261E] text-white rounded-2xl p-6 shadow-xl">
-                <div className="text-4xl font-black leading-none">20+</div>
+                <div className="text-4xl font-black leading-none">{yearsActive}+</div>
                 <div className="text-sm font-semibold opacity-80 mt-1.5 leading-snug">Years of<br />Ministry</div>
               </div>
               <div className="absolute -bottom-5 -left-5 bg-[#0E5AA7] text-white rounded-2xl px-5 py-4 shadow-xl">
@@ -284,7 +347,7 @@ export default function Home() {
               <p className="text-[#0E5AA7] text-[10px] font-black tracking-widest uppercase mb-3">Our Story</p>
               <h2 className="text-4xl lg:text-5xl font-black text-foreground leading-tight mb-6">More Than a Church —<br /><span className="text-[#0E5AA7]">We're a Family</span></h2>
               <p className="text-muted-foreground text-lg leading-relaxed mb-5">Liberty For Living Ministries International was founded on a simple, profound conviction: that Jesus Christ came to set humanity free — and that freedom is meant to be lived out loud, together.</p>
-              <p className="text-muted-foreground leading-relaxed mb-10">Today, our congregation spans generations and nations, united by faith, love, and a commitment to see every person walk in their God-given destiny.</p>
+              <p className="text-muted-foreground leading-relaxed mb-10">{churchSettings.mission ?? "Today, our congregation spans generations and nations, united by faith, love, and a commitment to see every person walk in their God-given destiny."}</p>
               <div className="grid grid-cols-3 gap-4 mb-10 py-8 border-y border-border">
                 {[{ num: "5,000+", label: "Members" }, { num: "12", label: "Life Groups" }, { num: "20+", label: "Years Active" }].map((s) => (
                   <div key={s.label} className="text-center">
@@ -353,11 +416,11 @@ export default function Home() {
               <div className="bg-white rounded-xl px-3 py-1.5 inline-block mb-5">
                 <ImageWithFallback src={logoImg} alt="Liberty For Living Ministries International" className="h-10 w-auto object-contain" />
               </div>
-              <p className="text-white/45 text-sm leading-relaxed mb-6">Walking in freedom.<br />Living in purpose.<br />Together in Christ.</p>
+              <p className="text-white/45 text-sm leading-relaxed mb-6">{churchSettings.tagline ?? "Walking in freedom. Living in purpose. Together in Christ."}</p>
               <div className="space-y-2 text-white/45 text-xs">
-                <div className="flex items-start gap-2"><MapPin size={12} className="mt-0.5 shrink-0 text-[#D7261E]" />123 Liberty Way, Abuja, Nigeria</div>
-                <div className="flex items-center gap-2"><Phone size={12} className="shrink-0 text-[#D7261E]" />+234 800 LIBERTY</div>
-                <div className="flex items-center gap-2"><Mail size={12} className="shrink-0 text-[#D7261E]" />hello@lflmi.org</div>
+                <div className="flex items-start gap-2"><MapPin size={12} className="mt-0.5 shrink-0 text-[#D7261E]" />{churchSettings.address ?? "Kingston, Jamaica"}</div>
+                <div className="flex items-center gap-2"><Phone size={12} className="shrink-0 text-[#D7261E]" />{churchSettings.phone ?? "+1 876 555 0100"}</div>
+                <div className="flex items-center gap-2"><Mail size={12} className="shrink-0 text-[#D7261E]" />{churchSettings.email ?? "hello@lflmi.org"}</div>
               </div>
             </div>
             {[
@@ -373,7 +436,7 @@ export default function Home() {
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8">
             <p className="text-white/30 text-xs">© 2025 Liberty For Living Ministries International. All rights reserved.</p>
-            <div className="flex items-center gap-5">{["Facebook", "Instagram", "YouTube", "Twitter"].map((s) => <a key={s} href="#" className="text-white/35 hover:text-white text-xs font-semibold transition-colors">{s}</a>)}</div>
+            <div className="flex items-center gap-5">{socialLinks.map(([name, href]) => <a key={name} href={href} className="text-white/35 hover:text-white text-xs font-semibold capitalize transition-colors">{name}</a>)}</div>
           </div>
         </div>
       </footer>
