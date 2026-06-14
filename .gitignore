@@ -1,0 +1,45 @@
+# Dependency directories
+node_modules/
+.pnp/
+.pnp.js
+.pnpm/
+
+# Build output
+dist/
+build/
+.out/
+
+# Local environment files
+.env
+.env.*
+
+# Vite cache
+.vite/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE/editor directories
+.vscode/
+.idea/
+*.code-workspace
+
+# Misc
+*.local
+
+# Ignore macOS folder attributes
+.AppleDouble
+.LSOverride
+
+# Ignore lock files not used by this repo
+package-lock.json
+yarn.lock
