@@ -44,11 +44,15 @@ SQL editor or CLI:
 
 1. `202606140001_initial_schema.sql`
 2. `202606140002_row_level_security.sql`
+3. `202606140003_atomic_visitor_submission.sql`
 
 The first migration creates the CMS, newcomer care, membership, attendance,
 giving, and church-settings tables. It also adds indexes and automatic
 `updated_at` triggers. The second migration enables row-level security and adds
 public-read, public-submission, and active-admin policies.
+
+The third migration adds the atomic public visitor-submission function used by
+the data-access layer. It prevents partially-created visitor records.
 
 To load safe development records after applying both migrations, run
 `supabase/seed.sql`. The seed file is idempotent and does not create admin
@@ -70,6 +74,24 @@ values (
 ```
 
 Never expose or use a service-role key in this Vite application.
+
+### Data access
+
+Import public and authenticated-admin data functions from `src/lib/data`.
+Database rows remain internal to this layer and are mapped to the camelCase
+domain types in `src/types`.
+
+- `src/lib/data/public.ts` contains published-content reads and public form
+  submissions.
+- `src/lib/data/admin.ts` contains authenticated care-workflow access and CMS
+  CRUD operations.
+- `src/lib/data/inputs.ts` defines form and update payloads.
+- `src/lib/supabase/database.types.ts` defines the typed database contract used
+  by the Supabase client.
+
+Admin functions rely on the current Supabase Auth session and the
+`admin_profiles` RLS policies. They must not be treated as authorization checks
+on their own.
 
 ### Run development server
 
