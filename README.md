@@ -19,6 +19,24 @@ The project is implemented using React, Vite, Tailwind CSS, shadcn UI patterns, 
 pnpm install
 ```
 
+### Configure Supabase
+
+Copy `.env.example` to `.env` and provide the public URL and publishable key from
+your Supabase project settings:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+```
+
+Only variables prefixed with `VITE_` are available to the browser. Never add a
+Supabase service-role key to a `VITE_` variable. Service-role operations must
+run in a separate trusted server environment.
+
+The browser-safe Supabase client is exported from
+`src/lib/supabase/client.ts`. It validates the required public environment
+variables when imported.
+
 ### Run development server
 
 ```bash
