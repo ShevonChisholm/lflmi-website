@@ -37,6 +37,40 @@ The browser-safe Supabase client is exported from
 `src/lib/supabase/client.ts`. It validates the required public environment
 variables when imported.
 
+### Create the database
+
+Run the SQL files in `supabase/migrations/` in filename order using the Supabase
+SQL editor or CLI:
+
+1. `202606140001_initial_schema.sql`
+2. `202606140002_row_level_security.sql`
+
+The first migration creates the CMS, newcomer care, membership, attendance,
+giving, and church-settings tables. It also adds indexes and automatic
+`updated_at` triggers. The second migration enables row-level security and adds
+public-read, public-submission, and active-admin policies.
+
+To load safe development records after applying both migrations, run
+`supabase/seed.sql`. The seed file is idempotent and does not create admin
+accounts.
+
+### Bootstrap the first admin
+
+Create the first user through Supabase Authentication, then run this statement
+from the trusted Supabase SQL editor using that user's ID:
+
+```sql
+insert into public.admin_profiles (id, full_name, email, role)
+values (
+  'AUTH_USER_ID',
+  'Admin Name',
+  'admin@example.com',
+  'SUPER_ADMIN'
+);
+```
+
+Never expose or use a service-role key in this Vite application.
+
 ### Run development server
 
 ```bash
