@@ -283,6 +283,114 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["ministries"]["Insert"]>;
         Relationships: [];
       };
+      members: {
+        Row: {
+          id: string;
+          person_id: string;
+          membership_number: Nullable<string>;
+          join_date: string;
+          role: Nullable<string>;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          person_id: string;
+          membership_number?: Nullable<string>;
+          join_date?: string;
+          role?: Nullable<string>;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["members"]["Insert"]>;
+        Relationships: [];
+      };
+      follow_ups: {
+        Row: {
+          id: string;
+          person_id: string;
+          assigned_to: Nullable<string>;
+          type: string;
+          due_date: Nullable<string>;
+          status: string;
+          notes: Nullable<string>;
+          completed_at: Nullable<string>;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          person_id: string;
+          assigned_to?: Nullable<string>;
+          type?: string;
+          due_date?: Nullable<string>;
+          status?: string;
+          notes?: Nullable<string>;
+          completed_at?: Nullable<string>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["follow_ups"]["Insert"]>;
+        Relationships: [];
+      };
+      meetings: {
+        Row: {
+          id: string;
+          person_id: string;
+          assigned_to: Nullable<string>;
+          title: string;
+          description: Nullable<string>;
+          start_time: string;
+          end_time: Nullable<string>;
+          location: Nullable<string>;
+          status: string;
+          notes: Nullable<string>;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          person_id: string;
+          assigned_to?: Nullable<string>;
+          title: string;
+          description?: Nullable<string>;
+          start_time: string;
+          end_time?: Nullable<string>;
+          location?: Nullable<string>;
+          status?: string;
+          notes?: Nullable<string>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["meetings"]["Insert"]>;
+        Relationships: [];
+      };
+      attendance_records: {
+        Row: {
+          id: string;
+          service_name: string;
+          service_date: string;
+          attendee_count: number;
+          visitor_count: number;
+          notes: Nullable<string>;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          service_name: string;
+          service_date: string;
+          attendee_count?: number;
+          visitor_count?: number;
+          notes?: Nullable<string>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["attendance_records"]["Insert"]>;
+        Relationships: [];
+      };
       people: {
         Row: {
           id: string;

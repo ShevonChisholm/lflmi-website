@@ -1,9 +1,12 @@
 import type {
   ContentPage,
   Event,
+  FollowUp,
   GivingProgram,
   GivingTransaction,
   Ministry,
+  Member,
+  Meeting,
   Person,
   PlannedVisit,
   PrayerRequest,
@@ -11,6 +14,7 @@ import type {
   ServiceTime,
   ChurchSettings,
   SocialLinks,
+  AttendanceRecord,
 } from "@/types";
 
 import type { TableRow } from "../supabase/database.types";
@@ -136,6 +140,58 @@ export const mapPlannedVisit = (
   visitDate: row.visit_date,
   status: row.status as PlannedVisit["status"],
   source: row.source,
+  notes: row.notes,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapMember = (row: TableRow<"members">): Member => ({
+  id: row.id,
+  personId: row.person_id,
+  membershipNumber: row.membership_number,
+  joinDate: row.join_date,
+  role: row.role,
+  status: row.status as Member["status"],
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapFollowUp = (row: TableRow<"follow_ups">): FollowUp => ({
+  id: row.id,
+  personId: row.person_id,
+  assignedTo: row.assigned_to,
+  type: row.type as FollowUp["type"],
+  dueDate: row.due_date,
+  status: row.status as FollowUp["status"],
+  notes: row.notes,
+  completedAt: row.completed_at,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapMeeting = (row: TableRow<"meetings">): Meeting => ({
+  id: row.id,
+  personId: row.person_id,
+  assignedTo: row.assigned_to,
+  title: row.title,
+  description: row.description,
+  startTime: row.start_time,
+  endTime: row.end_time,
+  location: row.location,
+  status: row.status as Meeting["status"],
+  notes: row.notes,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapAttendanceRecord = (
+  row: TableRow<"attendance_records">,
+): AttendanceRecord => ({
+  id: row.id,
+  serviceName: row.service_name,
+  serviceDate: row.service_date,
+  attendeeCount: row.attendee_count,
+  visitorCount: row.visitor_count,
   notes: row.notes,
   createdAt: row.created_at,
   updatedAt: row.updated_at,

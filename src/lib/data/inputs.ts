@@ -1,6 +1,10 @@
 import type {
   EventStatus,
+  FollowUpStatus,
+  FollowUpType,
   JsonValue,
+  MeetingStatus,
+  MemberStatus,
   MinistryStatus,
   PlannedVisitStatus,
   PrayerRequestStatus,
@@ -75,6 +79,54 @@ export interface PersonUpdateInput {
   source?: string | null;
   notes?: string | null;
 }
+
+export interface PersonInput {
+  firstName: string;
+  lastName?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  preferredContactMethod?: PreferredContactMethod;
+  status?: "NEW" | "FOLLOW_UP" | "RETURNING" | "MEMBER" | "INACTIVE";
+  source?: string | null;
+  notes?: string | null;
+}
+
+export interface MemberInput {
+  personId: UUID;
+  membershipNumber?: string | null;
+  joinDate?: string;
+  role?: string | null;
+  status?: MemberStatus;
+}
+
+export type MemberUpdateInput = Partial<Omit<MemberInput, "personId">>;
+
+export interface FollowUpInput {
+  personId: UUID;
+  assignedTo?: UUID | null;
+  type?: FollowUpType;
+  dueDate?: string | null;
+  status?: FollowUpStatus;
+  notes?: string | null;
+  completedAt?: string | null;
+}
+
+export type FollowUpUpdateInput = Partial<Omit<FollowUpInput, "personId">>;
+
+export interface MeetingInput {
+  personId: UUID;
+  assignedTo?: UUID | null;
+  title: string;
+  description?: string | null;
+  startTime: string;
+  endTime?: string | null;
+  location?: string | null;
+  status?: MeetingStatus;
+  notes?: string | null;
+}
+
+export type MeetingUpdateInput = Partial<Omit<MeetingInput, "personId">>;
 
 export interface PrayerRequestUpdateInput {
   personId?: UUID | null;

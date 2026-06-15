@@ -4,6 +4,10 @@ import type {
   Event,
   GivingProgram,
   GivingTransaction,
+  AttendanceRecord,
+  FollowUp,
+  Member,
+  Meeting,
   Ministry,
   Person,
   PlannedVisit,
@@ -27,9 +31,18 @@ import type {
   EventUpdateInput,
   GivingProgramInput,
   GivingProgramUpdateInput,
+  FollowUpInput,
+  FollowUpUpdateInput,
+  MemberInput,
+  MemberUpdateInput,
+  MeetingInput,
+  MeetingUpdateInput,
   MinistryInput,
   MinistryUpdateInput,
   PersonUpdateInput,
+  PersonInput,
+  PlannedVisitInput,
+  PrayerRequestInput,
   PlannedVisitUpdateInput,
   PrayerRequestUpdateInput,
   SermonInput,
@@ -43,6 +56,10 @@ import {
   mapEvent,
   mapGivingProgram,
   mapGivingTransaction,
+  mapAttendanceRecord,
+  mapFollowUp,
+  mapMember,
+  mapMeeting,
   mapMinistry,
   mapPerson,
   mapPlannedVisit,
@@ -256,6 +273,26 @@ export const getPersonById = async (id: UUID): Promise<Person | null> => {
   return data ? mapPerson(data) : null;
 };
 
+export const createPerson = async (input: PersonInput): Promise<Person> => {
+  const { data, error } = await supabase.from("people").insert({
+    first_name: input.firstName,
+    last_name: input.lastName ?? null,
+    email: input.email ?? null,
+    phone: input.phone ?? null,
+    address: input.address ?? null,
+    preferred_contact_method: input.preferredContactMethod ?? "NONE",
+    status: input.status ?? "NEW",
+    source: input.source ?? null,
+    notes: input.notes ?? null,
+  }).select("*").single();
+  return mapPerson(requireData(data, error, "Unable to create person."));
+};
+
+export const deletePerson = async (id: UUID): Promise<void> => {
+  const { error } = await supabase.from("people").delete().eq("id", id);
+  throwIfDataError(error, "Unable to remove person.");
+};
+
 export const updatePerson = async (
   id: UUID,
   input: PersonUpdateInput,
@@ -347,6 +384,137 @@ export const updatePlannedVisit = async (
   return mapPlannedVisit(
     requireData(data, error, "Unable to update the planned visit."),
   );
+};
+
+export const createPlannedVisit = async (
+  input: PlannedVisitInput,
+): Promise<PlannedVisit> => {
+  const { data, error } = await supabase.from("planned_visits").insert({
+    name: input.name,
+    email: input.email ?? null,
+    phone: input.phone ?? null,
+    service_name: input.serviceName,
+    visit_date: input.visitDate,
+    source: input.source ?? null,
+    notes: input.notes ?? null,
+  }).select("*").single();
+  return mapPlannedVisit(requireData(data, error, "Unable to create planned visit."));
+};
+
+export const createPrayerRequest = async (
+  input: PrayerRequestInput,
+): Promise<PrayerRequest> => {
+  const { data, error } = await supabase.from("prayer_requests").insert({
+    name: input.isAnonymous ? null : input.name ?? null,
+    email: input.isAnonymous ? null : input.email ?? null,
+    phone: input.isAnonymous ? null : input.phone ?? null,
+    is_anonymous: input.isAnonymous ?? false,
+    request_text: input.requestText,
+    category: input.category ?? null,
+    urgency: input.urgency ?? "MEDIUM",
+  }).select("*").single();
+  return mapPrayerRequest(requireData(data, error, "Unable to create prayer request."));
+};
+
+export const getMembers = async (): Promise<Member[]> => {
+  const { data, error } = await supabase.from("members").select("*").order("join_date", { ascending: false });
+  throwIfDataError(error, "Unable to load members.");
+  return (data ?? []).map(mapMember);
+};
+
+export const createMember = async (input: MemberInput): Promise<Member> => {
+  const { data, error } = await supabase.from("members").insert({
+    person_id: input.personId,
+    membership_number: input.membershipNumber ?? null,
+    join_date: input.joinDate ?? new Date().toISOString(),
+    role: input.role ?? null,
+    status: input.status ?? "NEW",
+  }).select("*").single();
+  const member = mapMember(requireData(data, error, "Unable to create member."));
+  await updatePerson(input.personId, { status: "MEMBER" });
+  return member;
+};
+
+export const updateMember = async (id: UUID, input: MemberUpdateInput): Promise<Member> => {
+  const { data, error } = await supabase.from("members").update({
+    membership_number: input.membershipNumber,
+    join_date: input.joinDate,
+    role: input.role,
+    status: input.status,
+  }).eq("id", id).select("*").single();
+  return mapMember(requireData(data, error, "Unable to update member."));
+};
+
+export const getFollowUps = async (): Promise<FollowUp[]> => {
+  const { data, error } = await supabase.from("follow_ups").select("*").order("due_date", { ascending: true });
+  throwIfDataError(error, "Unable to load follow-ups.");
+  return (data ?? []).map(mapFollowUp);
+};
+
+export const createFollowUp = async (input: FollowUpInput): Promise<FollowUp> => {
+  const { data, error } = await supabase.from("follow_ups").insert({
+    person_id: input.personId,
+    assigned_to: input.assignedTo ?? null,
+    type: input.type ?? "OTHER",
+    due_date: input.dueDate ?? null,
+    status: input.status ?? "PENDING",
+    notes: input.notes ?? null,
+    completed_at: input.completedAt ?? null,
+  }).select("*").single();
+  return mapFollowUp(requireData(data, error, "Unable to create follow-up."));
+};
+
+export const updateFollowUp = async (id: UUID, input: FollowUpUpdateInput): Promise<FollowUp> => {
+  const { data, error } = await supabase.from("follow_ups").update({
+    assigned_to: input.assignedTo,
+    type: input.type,
+    due_date: input.dueDate,
+    status: input.status,
+    notes: input.notes,
+    completed_at: input.completedAt,
+  }).eq("id", id).select("*").single();
+  return mapFollowUp(requireData(data, error, "Unable to update follow-up."));
+};
+
+export const getMeetings = async (): Promise<Meeting[]> => {
+  const { data, error } = await supabase.from("meetings").select("*").order("start_time", { ascending: true });
+  throwIfDataError(error, "Unable to load meetings.");
+  return (data ?? []).map(mapMeeting);
+};
+
+export const createMeeting = async (input: MeetingInput): Promise<Meeting> => {
+  const { data, error } = await supabase.from("meetings").insert({
+    person_id: input.personId,
+    assigned_to: input.assignedTo ?? null,
+    title: input.title,
+    description: input.description ?? null,
+    start_time: input.startTime,
+    end_time: input.endTime ?? null,
+    location: input.location ?? null,
+    status: input.status ?? "SCHEDULED",
+    notes: input.notes ?? null,
+  }).select("*").single();
+  return mapMeeting(requireData(data, error, "Unable to schedule meeting."));
+};
+
+export const updateMeeting = async (id: UUID, input: MeetingUpdateInput): Promise<Meeting> => {
+  const { data, error } = await supabase.from("meetings").update({
+    assigned_to: input.assignedTo,
+    title: input.title,
+    description: input.description,
+    start_time: input.startTime,
+    end_time: input.endTime,
+    location: input.location,
+    status: input.status,
+    notes: input.notes,
+  }).eq("id", id).select("*").single();
+  return mapMeeting(requireData(data, error, "Unable to update meeting."));
+};
+
+export const getAttendanceRecords = async (): Promise<AttendanceRecord[]> => {
+  const { data, error } = await supabase.from("attendance_records").select("*").order("service_date", { ascending: true });
+  throwIfDataError(error, "Unable to load attendance.");
+  return (data ?? []).map(mapAttendanceRecord);
 };
 
 export const getSermons = async (): Promise<Sermon[]> => {
