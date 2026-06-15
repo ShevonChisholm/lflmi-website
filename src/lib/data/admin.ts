@@ -1,5 +1,6 @@
 import type {
   ContentPage,
+  ContactMessage,
   ChurchSettings,
   Event,
   GivingProgram,
@@ -26,6 +27,7 @@ import { requireData, throwIfDataError } from "./errors";
 import type {
   ContentPageInput,
   ContentPageUpdateInput,
+  ContactMessageUpdateInput,
   ChurchSettingsUpdateInput,
   EventInput,
   EventUpdateInput,
@@ -52,6 +54,7 @@ import type {
 } from "./inputs";
 import {
   mapContentPage,
+  mapContactMessage,
   mapChurchSettings,
   mapEvent,
   mapGivingProgram,
@@ -71,6 +74,14 @@ import {
 export interface AdminListOptions {
   limit?: number;
 }
+
+const mapContactMessageUpdate = (
+  input: ContactMessageUpdateInput,
+): TableUpdate<"contact_messages"> => ({
+  status: input.status,
+  assigned_to: input.assignedTo,
+  resolved_at: input.resolvedAt,
+});
 
 const mapPersonUpdate = (
   input: PersonUpdateInput,
@@ -725,6 +736,37 @@ export const updateContentPage = async (
 export const deleteContentPage = async (id: UUID): Promise<void> => {
   const { error } = await supabase.from("content_pages").delete().eq("id", id);
   throwIfDataError(error, "Unable to delete the content page.");
+};
+
+export const getContactMessages = async (): Promise<ContactMessage[]> => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  throwIfDataError(error, "Unable to load contact messages.");
+  return (data ?? []).map(mapContactMessage);
+};
+
+export const updateContactMessage = async (
+  id: UUID,
+  input: ContactMessageUpdateInput,
+): Promise<ContactMessage> => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update(mapContactMessageUpdate(input))
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  return mapContactMessage(
+    requireData(data, error, "Unable to update the contact message."),
+  );
+};
+
+export const deleteContactMessage = async (id: UUID): Promise<void> => {
+  const { error } = await supabase.from("contact_messages").delete().eq("id", id);
+  throwIfDataError(error, "Unable to delete the contact message.");
 };
 
 export const updateChurchSettings = async (

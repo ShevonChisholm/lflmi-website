@@ -1,4 +1,5 @@
 import type {
+  ContactMessage,
   ContentPage,
   Event,
   FollowUp,
@@ -88,6 +89,22 @@ export const mapContentPage = (
   seoTitle: row.seo_title,
   seoDescription: row.seo_description,
   publicationStatus: row.publication_status as ContentPage["publicationStatus"],
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapContactMessage = (
+  row: TableRow<"contact_messages">,
+): ContactMessage => ({
+  id: row.id,
+  name: row.name,
+  email: row.email,
+  phone: row.phone,
+  subject: row.subject,
+  message: row.message,
+  status: row.status as ContactMessage["status"],
+  assignedTo: row.assigned_to,
+  resolvedAt: row.resolved_at,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });

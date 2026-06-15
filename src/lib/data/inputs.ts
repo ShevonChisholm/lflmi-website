@@ -1,4 +1,5 @@
 import type {
+  ContactMessageStatus,
   EventStatus,
   FollowUpStatus,
   FollowUpType,
@@ -21,6 +22,12 @@ export interface ContactMessageInput {
   phone?: string | null;
   subject: string;
   message: string;
+}
+
+export interface ContactMessageUpdateInput {
+  status?: ContactMessageStatus;
+  assignedTo?: UUID | null;
+  resolvedAt?: string | null;
 }
 
 export interface VisitorInput {

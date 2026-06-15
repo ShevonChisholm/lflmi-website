@@ -3,16 +3,18 @@ import { Outlet, NavLink, useNavigate, useLocation } from "react-router";
 import {
   LayoutDashboard, UserCheck, Heart, Mic2, Calendar,
   CalendarCheck, Users, HandCoins, Globe, Info,
-  Settings, LogOut, Menu, X, Bell, Search, ChevronRight,
+  Settings, LogOut, Menu, Bell, Search, ChevronRight, MessagesSquare,
 } from "lucide-react";
 import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
 import logoImg from "@/imports/PHOTO-2025-11-20-06-26-28-removebg-preview.png";
 import { supabase } from "@/lib/supabase/client";
+import { getContactMessages } from "@/lib/data";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
   { icon: UserCheck, label: "Visitors", path: "/admin/visitors" },
   { icon: Heart, label: "Prayer Requests", path: "/admin/prayer-requests" },
+  { icon: MessagesSquare, label: "Contact Inbox", path: "/admin/contact-messages" },
   { icon: Mic2, label: "Sermons", path: "/admin/sermons" },
   { icon: Calendar, label: "Events", path: "/admin/events" },
   { icon: CalendarCheck, label: "Planned Visits", path: "/admin/planned-visits" },
@@ -26,6 +28,7 @@ const pageTitles: Record<string, string> = {
   "/admin/dashboard": "Dashboard",
   "/admin/visitors": "Visitors",
   "/admin/prayer-requests": "Prayer Requests",
+  "/admin/contact-messages": "Contact Inbox",
   "/admin/sermons": "Sermons",
   "/admin/events": "Events",
   "/admin/planned-visits": "Planned Visits",
@@ -39,7 +42,7 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [notifications] = useState(5);
+  const [notifications, setNotifications] = useState(0);
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
@@ -54,6 +57,38 @@ export default function AdminLayout() {
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    const refreshNotifications = async () => {
+      try {
+        const messages = await getContactMessages();
+        setNotifications(messages.filter((message) => message.status === "NEW").length);
+      } catch {
+        setNotifications(0);
+      }
+    };
+    const handleCount = (event: Event) => {
+      setNotifications((event as CustomEvent<number>).detail);
+    };
+    void refreshNotifications();
+    window.addEventListener("contact-unread-count", handleCount);
+    window.addEventListener("focus", refreshNotifications);
+    const refreshInterval = window.setInterval(refreshNotifications, 30000);
+    const channel = supabase
+      .channel("admin-contact-notifications")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "contact_messages" },
+        () => void refreshNotifications(),
+      )
+      .subscribe();
+    return () => {
+      window.removeEventListener("contact-unread-count", handleCount);
+      window.removeEventListener("focus", refreshNotifications);
+      window.clearInterval(refreshInterval);
+      void supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -130,10 +165,10 @@ export default function AdminLayout() {
             <LogOut size={18} />Sign Out
           </button>
           <div className="flex items-center gap-3 px-3 pt-3 mt-2 border-t border-[#e8eef6]">
-            <div className="w-8 h-8 rounded-full bg-[#0E5AA7] flex items-center justify-center text-white text-xs font-black shrink-0">EA</div>
+            <div className="w-8 h-8 rounded-full bg-[#0E5AA7] flex items-center justify-center text-white text-xs font-black shrink-0">AD</div>
             <div className="min-w-0">
-              <div className="text-xs font-bold text-[#0d1b2e] truncate">Emmanuel Adeyemi</div>
-              <div className="text-[10px] text-[#6b7897] truncate">Senior Pastor</div>
+              <div className="text-xs font-bold text-[#0d1b2e] truncate">Administrator</div>
+              <div className="text-[10px] text-[#6b7897] truncate">LFLMI Admin</div>
             </div>
           </div>
         </div>
@@ -178,14 +213,14 @@ export default function AdminLayout() {
               View Site
             </a>
             {/* Notifications */}
-            <button onClick={() => navigate("/admin/prayer-requests")} aria-label="View notifications" className="relative p-2 rounded-xl text-[#6b7897] hover:bg-[#f0f4f9] hover:text-[#0d1b2e] transition-colors">
+            <button onClick={() => navigate("/admin/contact-messages")} aria-label="View unread contact messages" className="relative p-2 rounded-xl text-[#6b7897] hover:bg-[#f0f4f9] hover:text-[#0d1b2e] transition-colors">
               <Bell size={18} />
               {notifications > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 bg-[#D7261E] text-white text-[9px] font-black rounded-full flex items-center justify-center">{notifications}</span>
               )}
             </button>
             {/* Avatar */}
-            <button onClick={() => navigate("/admin/about")} aria-label="Open settings" className="w-8 h-8 rounded-full bg-[#0E5AA7] flex items-center justify-center text-white text-xs font-black cursor-pointer">EA</button>
+            <button onClick={() => navigate("/admin/about")} aria-label="Open settings" className="w-8 h-8 rounded-full bg-[#0E5AA7] flex items-center justify-center text-white text-xs font-black cursor-pointer">AD</button>
           </div>
         </header>
 
