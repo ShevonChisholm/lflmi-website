@@ -5,8 +5,13 @@ import {
   Play, ArrowRight, Phone, Mail, AlertCircle
 } from "lucide-react";
 import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
+import {
+  PublicActionDialog,
+  type PublicDialogMode,
+} from "@/app/components/public/PublicActionDialog";
 import { useHomeContent } from "@/app/hooks/useHomeContent";
 import logoImg from "@/imports/PHOTO-2025-11-20-06-26-28-removebg-preview.png";
+import type { Event, Ministry } from "@/types";
 
 const navLinks = [
   { label: "About", href: "#about" },
@@ -53,6 +58,9 @@ const ministryIcon = (name: string) => {
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [dialogMode, setDialogMode] = useState<PublicDialogMode | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedMinistry, setSelectedMinistry] = useState<Ministry | null>(null);
   const {
     serviceTimes: dynamicServiceTimes,
     latestSermon,
@@ -89,6 +97,17 @@ export default function Home() {
   const socialLinks = Object.entries(churchSettings.socialLinks).filter(
     (entry): entry is [string, string] => Boolean(entry[1]),
   );
+  const openDialog = (mode: PublicDialogMode) => setDialogMode(mode);
+  const openEvent = (event: Event) => {
+    setSelectedEvent(event);
+    setDialogMode("event");
+  };
+  const openMinistry = (ministry: Ministry) => {
+    setSelectedMinistry(ministry);
+    setDialogMode("ministry");
+  };
+  const phoneHref = `tel:${churchSettings.phone?.replace(/[^\d+]/g, "") ?? "+18765550100"}`;
+  const emailHref = `mailto:${churchSettings.email ?? "hello@lflmi.org"}`;
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 50);
@@ -101,7 +120,7 @@ export default function Home() {
       {/* NAV */}
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/96 dark:bg-[#0a1220]/96 backdrop-blur-md shadow-sm" : "bg-transparent"}`}>
         <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-16 lg:h-20">
-          <a href="#" className="shrink-0">
+          <a href="/" className="shrink-0">
             <div className="bg-white rounded-xl px-3 py-1.5 shadow-sm">
               <ImageWithFallback src={logoImg} alt="Liberty For Living Ministries International" className="h-8 lg:h-10 w-auto object-contain" />
             </div>
@@ -112,7 +131,7 @@ export default function Home() {
             ))}
           </nav>
           <div className="hidden lg:flex items-center gap-3">
-            <a href="#visit" className="bg-[#0E5AA7] hover:bg-[#0a4a8a] text-white text-sm font-bold px-5 py-2.5 rounded-full transition-colors shadow-md shadow-blue-900/20">Plan Your Visit</a>
+            <button type="button" onClick={() => openDialog("visit")} className="bg-[#0E5AA7] hover:bg-[#0a4a8a] text-white text-sm font-bold px-5 py-2.5 rounded-full transition-colors shadow-md shadow-blue-900/20">Plan Your Visit</button>
           </div>
           <button onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu" className={`lg:hidden p-2 rounded-lg transition-colors ${scrolled ? "text-[#0d1b2e] dark:text-white hover:bg-slate-100 dark:hover:bg-white/10" : "text-white hover:bg-white/10"}`}>
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -125,7 +144,7 @@ export default function Home() {
                 {l.label}<ChevronRight size={16} className="text-muted-foreground" />
               </a>
             ))}
-            <a href="#visit" onClick={() => setMenuOpen(false)} className="mt-5 block text-center bg-[#0E5AA7] text-white font-bold py-3.5 rounded-full shadow">Plan Your Visit</a>
+            <button type="button" onClick={() => { setMenuOpen(false); openDialog("visit"); }} className="mt-5 block w-full text-center bg-[#0E5AA7] text-white font-bold py-3.5 rounded-full shadow">Plan Your Visit</button>
           </div>
         )}
       </header>
@@ -141,7 +160,7 @@ export default function Home() {
           <h1 className="text-6xl sm:text-7xl lg:text-[5.5rem] font-black text-white leading-[1.02] tracking-tight mb-7">Liberty.<br /><span className="text-[#ef5a50]">For Living.</span></h1>
           <p className="text-lg sm:text-xl text-white/75 max-w-2xl mx-auto mb-12 leading-relaxed font-medium">{churchSettings.tagline ?? "A community of faith where every person is seen, loved, and empowered to walk in the freedom that Christ provides."}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#visit" className="bg-[#D7261E] hover:bg-[#b81f19] text-white font-black px-9 py-4 rounded-full text-base transition-all hover:scale-105 shadow-xl shadow-red-900/40">Plan Your Visit</a>
+            <button type="button" onClick={() => openDialog("visit")} className="bg-[#D7261E] hover:bg-[#b81f19] text-white font-black px-9 py-4 rounded-full text-base transition-all hover:scale-105 shadow-xl shadow-red-900/40">Plan Your Visit</button>
             <a href="#sermons" className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold px-9 py-4 rounded-full text-base transition-all flex items-center gap-2.5 justify-center"><Play size={15} className="fill-white" />Watch a Sermon</a>
           </div>
         </div>
@@ -194,10 +213,10 @@ export default function Home() {
               <p className="text-[#0E5AA7] text-[10px] font-black tracking-widest uppercase mb-3">Latest Message</p>
               <h2 className="text-4xl lg:text-5xl font-black text-foreground leading-tight">This Week's<br />Sermon</h2>
             </div>
-            <a href="#" className="hidden sm:flex items-center gap-1.5 text-[#0E5AA7] font-bold text-sm hover:gap-3 transition-all group">All Sermons<ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" /></a>
+            <button type="button" onClick={() => openDialog("sermon")} className="hidden sm:flex items-center gap-1.5 text-[#0E5AA7] font-bold text-sm hover:gap-3 transition-all group">Sermon Details<ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" /></button>
           </div>
           <div className="grid lg:grid-cols-5 rounded-3xl overflow-hidden shadow-2xl shadow-slate-900/10 dark:shadow-black/40">
-            <div className="lg:col-span-3 relative aspect-video lg:aspect-auto min-h-72 bg-slate-800 group cursor-pointer">
+            <button type="button" onClick={() => openDialog("sermon")} aria-label={`Open ${latestSermon.title} sermon details`} className="lg:col-span-3 relative aspect-video lg:aspect-auto min-h-72 bg-slate-800 group cursor-pointer text-left">
               <img src={latestSermon.thumbnailUrl ?? "https://images.unsplash.com/photo-1610414961792-b7fffebddd14?w=900&h=600&fit=crop&auto=format"} alt={latestSermon.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
               <div className="absolute inset-0 flex items-center justify-center">
@@ -207,7 +226,7 @@ export default function Home() {
                 <span className="bg-[#D7261E] text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg">{formatDate(latestSermon.sermonDate, { month: "long", day: "numeric", year: "numeric" }) || "Latest message"}</span>
                 <span className="bg-black/40 backdrop-blur-sm text-white/80 text-xs font-semibold px-3 py-1.5 rounded-full">{latestSermon.durationMinutes ? `${latestSermon.durationMinutes} min` : "Message"}</span>
               </div>
-            </div>
+            </button>
             <div className="lg:col-span-2 bg-card p-8 lg:p-10 flex flex-col justify-center">
               <div className="text-[#0E5AA7] text-[10px] font-black tracking-widest uppercase mb-5">{latestSermon.series ? `Series: ${latestSermon.series}` : "Latest Message"}</div>
               <h3 className="text-2xl lg:text-[1.75rem] font-black text-card-foreground leading-tight mb-4">"{latestSermon.title}"</h3>
@@ -220,8 +239,8 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex gap-3 mt-7">
-                <a href={latestSermon.videoUrl ?? "#sermons"} className="flex-1 bg-[#0E5AA7] hover:bg-[#0a4a8a] text-white font-bold py-3 rounded-full text-sm transition-colors flex items-center justify-center gap-2"><Play size={13} className="fill-white" />Watch Now</a>
-                <a href={latestSermon.notesUrl ?? "#sermons"} className="px-5 py-3 border-2 border-border hover:border-[#0E5AA7] hover:text-[#0E5AA7] text-foreground rounded-full text-sm font-bold transition-colors">Notes</a>
+                <button type="button" onClick={() => openDialog("sermon")} className="flex-1 bg-[#0E5AA7] hover:bg-[#0a4a8a] text-white font-bold py-3 rounded-full text-sm transition-colors flex items-center justify-center gap-2"><Play size={13} className="fill-white" />Watch Now</button>
+                <button type="button" onClick={() => openDialog("sermon")} className="px-5 py-3 border-2 border-border hover:border-[#0E5AA7] hover:text-[#0E5AA7] text-foreground rounded-full text-sm font-bold transition-colors">Notes</button>
               </div>
             </div>
           </div>
@@ -251,7 +270,7 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <a href="#" className="inline-flex items-center gap-2 bg-[#0E5AA7] hover:bg-[#0a4a8a] text-white font-black px-9 py-4 rounded-full transition-all hover:gap-3 group shadow-lg shadow-blue-900/20">I'm Planning to Visit<ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></a>
+              <button type="button" onClick={() => openDialog("visit")} className="inline-flex items-center gap-2 bg-[#0E5AA7] hover:bg-[#0a4a8a] text-white font-black px-9 py-4 rounded-full transition-all hover:gap-3 group shadow-lg shadow-blue-900/20">I'm Planning to Visit<ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></button>
             </div>
             <div className="relative">
               <div className="rounded-3xl overflow-hidden aspect-[4/5] bg-slate-200 shadow-2xl shadow-slate-900/15">
@@ -279,7 +298,7 @@ export default function Home() {
               <p className="text-[#0E5AA7] text-[10px] font-black tracking-widest uppercase mb-3">What's Coming Up</p>
               <h2 className="text-4xl lg:text-5xl font-black text-foreground leading-tight">Upcoming<br />Events</h2>
             </div>
-            <a href="#" className="hidden sm:flex items-center gap-1.5 text-[#0E5AA7] font-bold text-sm hover:gap-3 transition-all group">Full Calendar<ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" /></a>
+            <button type="button" onClick={() => openDialog("events")} className="hidden sm:flex items-center gap-1.5 text-[#0E5AA7] font-bold text-sm hover:gap-3 transition-all group">Full Calendar<ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" /></button>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {displayEvents.map((ev) => (
@@ -297,7 +316,7 @@ export default function Home() {
                     <div className="flex items-center gap-2"><Clock size={12} className="text-[#0E5AA7] shrink-0" />{ev.time}</div>
                     <div className="flex items-center gap-2"><MapPin size={12} className="text-[#0E5AA7] shrink-0" />{ev.location}</div>
                   </div>
-                  <button className="w-full border-2 border-border hover:border-[#0E5AA7] hover:text-[#0E5AA7] text-foreground font-bold py-3 rounded-full text-sm transition-colors">Learn More</button>
+                  <button type="button" onClick={() => openEvent(ev)} className="w-full border-2 border-border hover:border-[#0E5AA7] hover:text-[#0E5AA7] text-foreground font-bold py-3 rounded-full text-sm transition-colors">Learn More</button>
                 </div>
               </div>
             ))}
@@ -315,12 +334,12 @@ export default function Home() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {displayMinistries.map((m) => (
-              <div key={m.id} className="group bg-card rounded-3xl p-7 hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer">
+              <button type="button" onClick={() => openMinistry(m)} key={m.id} className="group bg-card rounded-3xl p-7 hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer text-left">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6" style={{ backgroundColor: `${m.color}15` }}><m.icon size={22} style={{ color: m.color }} /></div>
                 <h3 className="text-xl font-black text-card-foreground mb-3">{m.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed mb-6">{m.desc}</p>
                 <div className="flex items-center gap-1 text-sm font-bold transition-all group-hover:gap-2" style={{ color: m.color }}>Learn More<ChevronRight size={15} className="group-hover:translate-x-0.5 transition-transform" /></div>
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -356,7 +375,7 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <a href="#" className="inline-flex items-center gap-2 bg-[#0E5AA7] hover:bg-[#0a4a8a] text-white font-black px-9 py-4 rounded-full transition-all hover:gap-3 group shadow-lg shadow-blue-900/20">Our Full Story<ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></a>
+              <button type="button" onClick={() => openDialog("contact")} className="inline-flex items-center gap-2 bg-[#0E5AA7] hover:bg-[#0a4a8a] text-white font-black px-9 py-4 rounded-full transition-all hover:gap-3 group shadow-lg shadow-blue-900/20">Connect With Our Church<ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></button>
             </div>
           </div>
         </div>
@@ -372,8 +391,8 @@ export default function Home() {
             <h2 className="text-4xl lg:text-5xl font-black text-white leading-tight mb-6">You Don't Have<br />to Face It Alone</h2>
             <p className="text-white/65 text-lg leading-relaxed mb-10">Our Prayer & Care team is available to walk alongside you through life's most difficult moments — in prayer, in counsel, and in community.</p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <a href="#" className="bg-white hover:bg-slate-50 text-[#0E5AA7] font-black px-8 py-4 rounded-full transition-colors flex items-center gap-2.5 justify-center shadow-xl"><Heart size={17} className="text-[#D7261E]" />Submit a Prayer Request</a>
-              <a href="#" className="border-2 border-white/25 hover:border-white/60 text-white font-bold px-8 py-4 rounded-full transition-colors flex items-center gap-2.5 justify-center"><Phone size={17} />Talk to Someone</a>
+              <button type="button" onClick={() => openDialog("prayer")} className="bg-white hover:bg-slate-50 text-[#0E5AA7] font-black px-8 py-4 rounded-full transition-colors flex items-center gap-2.5 justify-center shadow-xl"><Heart size={17} className="text-[#D7261E]" />Submit a Prayer Request</button>
+              <a href={phoneHref} className="border-2 border-white/25 hover:border-white/60 text-white font-bold px-8 py-4 rounded-full transition-colors flex items-center gap-2.5 justify-center"><Phone size={17} />Talk to Someone</a>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -396,14 +415,14 @@ export default function Home() {
           <p className="text-muted-foreground text-xl leading-relaxed max-w-xl mx-auto mb-14">Take your first step toward a life of purpose, community, and freedom. We would love to worship with you this Sunday.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <a href="#visit" className="bg-[#0E5AA7] hover:bg-[#0a4a8a] text-white font-black px-12 py-5 rounded-full text-lg transition-all hover:scale-105 shadow-xl shadow-blue-900/20">Join Us This Sunday</a>
-            <a href="#" className="border-2 border-border hover:border-[#0E5AA7] hover:text-[#0E5AA7] text-foreground font-bold px-12 py-5 rounded-full text-lg transition-colors">Connect with Us</a>
+            <button type="button" onClick={() => openDialog("contact")} className="border-2 border-border hover:border-[#0E5AA7] hover:text-[#0E5AA7] text-foreground font-bold px-12 py-5 rounded-full text-lg transition-colors">Connect with Us</button>
           </div>
           <div className="bg-[#eef4fc] dark:bg-[#111c30] rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
             <div>
               <div className="font-black text-foreground text-base">Support the Ministry</div>
               <div className="text-muted-foreground text-sm mt-0.5">Your generosity helps us reach families and communities with the Gospel.</div>
             </div>
-            <a href="#" className="shrink-0 bg-[#D7261E] hover:bg-[#b81f19] text-white font-black px-7 py-3.5 rounded-full text-sm transition-colors shadow-md shadow-red-900/20 whitespace-nowrap">Give Online</a>
+            <button type="button" onClick={() => openDialog("give")} className="shrink-0 bg-[#D7261E] hover:bg-[#b81f19] text-white font-black px-7 py-3.5 rounded-full text-sm transition-colors shadow-md shadow-red-900/20 whitespace-nowrap">Give Online</button>
           </div>
         </div>
       </section>
@@ -419,8 +438,8 @@ export default function Home() {
               <p className="text-white/45 text-sm leading-relaxed mb-6">{churchSettings.tagline ?? "Walking in freedom. Living in purpose. Together in Christ."}</p>
               <div className="space-y-2 text-white/45 text-xs">
                 <div className="flex items-start gap-2"><MapPin size={12} className="mt-0.5 shrink-0 text-[#D7261E]" />{churchSettings.address ?? "Kingston, Jamaica"}</div>
-                <div className="flex items-center gap-2"><Phone size={12} className="shrink-0 text-[#D7261E]" />{churchSettings.phone ?? "+1 876 555 0100"}</div>
-                <div className="flex items-center gap-2"><Mail size={12} className="shrink-0 text-[#D7261E]" />{churchSettings.email ?? "hello@lflmi.org"}</div>
+                <a href={phoneHref} className="flex items-center gap-2 hover:text-white"><Phone size={12} className="shrink-0 text-[#D7261E]" />{churchSettings.phone ?? "+1 876 555 0100"}</a>
+                <a href={emailHref} className="flex items-center gap-2 hover:text-white"><Mail size={12} className="shrink-0 text-[#D7261E]" />{churchSettings.email ?? "hello@lflmi.org"}</a>
               </div>
             </div>
             {[
@@ -430,16 +449,39 @@ export default function Home() {
             ].map((col) => (
               <div key={col.heading}>
                 <div className="text-[10px] font-black tracking-widest uppercase text-white/35 mb-5">{col.heading}</div>
-                <ul className="space-y-3">{col.links.map((l) => <li key={l}><a href="#" className="text-white/55 hover:text-white text-sm transition-colors font-medium">{l}</a></li>)}</ul>
+                <ul className="space-y-3">{col.links.map((l) => <li key={l}><button type="button" onClick={() => {
+                  if (l.includes("Prayer")) openDialog("prayer");
+                  else if (l.includes("Visit")) openDialog("visit");
+                  else if (l.includes("Give")) openDialog("give");
+                  else if (l.includes("Event")) openDialog("events");
+                  else if (l.includes("Sermon")) openDialog("sermon");
+                  else if (l.includes("Ministr") || l.includes("Life Groups") || l.includes("Volunteer")) document.querySelector("#ministries")?.scrollIntoView({ behavior: "smooth" });
+                  else if (l.includes("About") || l.includes("Leadership")) document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" });
+                  else openDialog("contact");
+                }} className="text-white/55 hover:text-white text-sm transition-colors font-medium">{l}</button></li>)}</ul>
               </div>
             ))}
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8">
             <p className="text-white/30 text-xs">© 2025 Liberty For Living Ministries International. All rights reserved.</p>
-            <div className="flex items-center gap-5">{socialLinks.map(([name, href]) => <a key={name} href={href} className="text-white/35 hover:text-white text-xs font-semibold capitalize transition-colors">{name}</a>)}</div>
+            <div className="flex items-center gap-5">{socialLinks.map(([name, href]) => <a key={name} href={href} target="_blank" rel="noreferrer" className="text-white/35 hover:text-white text-xs font-semibold capitalize transition-colors">{name}</a>)}</div>
           </div>
         </div>
       </footer>
+      {dialogMode && (
+        <PublicActionDialog
+          key={`${dialogMode}-${selectedEvent?.id ?? ""}-${selectedMinistry?.id ?? ""}`}
+          mode={dialogMode}
+          onClose={() => setDialogMode(null)}
+          churchSettings={churchSettings}
+          serviceTimes={dynamicServiceTimes}
+          events={dynamicEvents}
+          event={selectedEvent}
+          ministry={selectedMinistry}
+          sermon={latestSermon}
+          onSelectEvent={openEvent}
+        />
+      )}
     </div>
   );
 }
