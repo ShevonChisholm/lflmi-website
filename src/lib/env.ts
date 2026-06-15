@@ -1,5 +1,5 @@
 const getRequiredPublicEnv = (
-  key: "VITE_SUPABASE_URL" | "VITE_SUPABASE_PUBLISHABLE_KEY",
+  key: "VITE_SUPABASE_URL" | "VITE_SUPABASE_PUBLISHABLE_KEY" | "VITE_BIBLE_READER_API_URL",
 ): string => {
   const value = import.meta.env[key]?.trim();
 
@@ -13,4 +13,5 @@ const getRequiredPublicEnv = (
 export const publicEnv = {
   supabaseUrl: getRequiredPublicEnv("VITE_SUPABASE_URL"),
   supabasePublishableKey: getRequiredPublicEnv("VITE_SUPABASE_PUBLISHABLE_KEY"),
+  bibleReaderApiUrl: getRequiredPublicEnv("VITE_BIBLE_READER_API_URL"),
 } as const;

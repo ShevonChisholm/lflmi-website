@@ -19,6 +19,7 @@ const navLinks = [
   { label: "Ministries", href: "#ministries" },
   { label: "Events", href: "#events" },
   { label: "Give", href: "#give" },
+  { label: "Bible Reader", href: "/bible" },
 ];
 
 const careItems = [
@@ -445,7 +446,7 @@ export default function Home() {
             {[
               { heading: "Explore", links: ["About Us", "Our Leadership", "Sermons", "Events", "Ministries"] },
               { heading: "Connect", links: ["Plan a Visit", "Life Groups", "Prayer Request", "Volunteer", "Contact Us"] },
-              { heading: "Resources", links: ["Bible Studies", "Devotionals", "Podcast", "Newsletter", "Give Online"] },
+              { heading: "Resources", links: ["Bible Studies", "Devotionals", "Bible Reader", "Podcast", "Newsletter", "Give Online"] },
             ].map((col) => (
               <div key={col.heading}>
                 <div className="text-[10px] font-black tracking-widest uppercase text-white/35 mb-5">{col.heading}</div>
@@ -455,6 +456,7 @@ export default function Home() {
                   else if (l.includes("Give")) openDialog("give");
                   else if (l.includes("Event")) openDialog("events");
                   else if (l.includes("Sermon")) openDialog("sermon");
+                  else if (l === "Bible Reader") window.location.href = "/bible";
                   else if (l.includes("Ministr") || l.includes("Life Groups") || l.includes("Volunteer")) document.querySelector("#ministries")?.scrollIntoView({ behavior: "smooth" });
                   else if (l.includes("About") || l.includes("Leadership")) document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" });
                   else openDialog("contact");

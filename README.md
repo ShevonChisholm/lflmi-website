@@ -37,6 +37,15 @@ The browser-safe Supabase client is exported from
 `src/lib/supabase/client.ts`. It validates the required public environment
 variables when imported.
 
+### Bible Reader
+
+A Bible reader page is available at `/bible`.
+It uses a Supabase Edge Function to keep the API.Bible key secret while
+supporting translation, book, chapter, and verse search.
+
+Set the edge function URL in your browser environment and keep the API key
+secure in server-side configuration.
+
 ### Create the database
 
 Run the SQL files in `supabase/migrations/` in filename order using the Supabase
