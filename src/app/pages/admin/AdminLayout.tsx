@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from "react-router";
 import {
   LayoutDashboard, UserCheck, Heart, Mic2, Calendar,
   CalendarCheck, Users, HandCoins, Globe, Info,
-  Settings, LogOut, Menu, Bell, Search, ChevronRight, MessagesSquare,
+  Settings, LogOut, Menu, Bell, Search, ChevronRight, MessagesSquare, Files,
 } from "lucide-react";
 import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
 import logoImg from "@/imports/PHOTO-2025-11-20-06-26-28-removebg-preview.png";
@@ -21,6 +21,7 @@ const navItems = [
   { icon: Users, label: "Members", path: "/admin/members" },
   { icon: HandCoins, label: "Give Programs", path: "/admin/give" },
   { icon: Globe, label: "Ministries", path: "/admin/ministries" },
+  { icon: Files, label: "Content Pages", path: "/admin/content-pages" },
   { icon: Info, label: "About", path: "/admin/about" },
 ];
 
@@ -35,6 +36,7 @@ const pageTitles: Record<string, string> = {
   "/admin/members": "Members",
   "/admin/give": "Give Programs",
   "/admin/ministries": "Ministries",
+  "/admin/content-pages": "Content Pages",
   "/admin/about": "About & Settings",
 };
 

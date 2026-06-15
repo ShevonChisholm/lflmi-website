@@ -13,6 +13,7 @@ import Give from "./pages/admin/Give";
 import Ministries from "./pages/admin/Ministries";
 import About from "./pages/admin/About";
 import ContactMessages from "./pages/admin/ContactMessages";
+import ContentPages from "./pages/admin/ContentPages";
 
 export const router = createBrowserRouter([
   { path: "/", Component: Home },
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { path: "ministries", Component: Ministries },
       { path: "about", Component: About },
       { path: "contact-messages", Component: ContactMessages },
+      { path: "content-pages", Component: ContentPages },
     ],
   },
 ]);

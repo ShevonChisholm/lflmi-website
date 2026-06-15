@@ -1,16 +1,17 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Loader2, X } from "lucide-react";
-import type { Event, GivingProgram, Ministry, Sermon } from "@/types";
+import type { ContentPage, Event, GivingProgram, JsonValue, Ministry, Sermon } from "@/types";
 import type {
+  ContentPageInput,
   EventInput,
   GivingProgramInput,
   MinistryInput,
   SermonInput,
 } from "@/lib/data";
 
-type EditorKind = "sermon" | "event" | "ministry" | "giving";
-type EditorValue = Sermon | Event | Ministry | GivingProgram;
-type EditorInput = SermonInput | EventInput | MinistryInput | GivingProgramInput;
+type EditorKind = "sermon" | "event" | "ministry" | "giving" | "contentPage";
+type EditorValue = Sermon | Event | Ministry | GivingProgram | ContentPage;
+type EditorInput = SermonInput | EventInput | MinistryInput | GivingProgramInput | ContentPageInput;
 
 interface AdminCmsDialogProps {
   kind: EditorKind;
@@ -107,7 +108,7 @@ export function AdminCmsDialog({
         color: text("color"),
         status: String(data.get("status")) as MinistryInput["status"],
       };
-    } else {
+    } else if (kind === "giving") {
       input = {
         name: String(data.get("name")),
         description: text("description"),
@@ -117,6 +118,25 @@ export function AdminCmsDialog({
         color: text("color"),
         icon: text("icon"),
         status: String(data.get("status")) as GivingProgramInput["status"],
+      };
+    } else {
+      const sectionsText = String(data.get("sections") || "").trim();
+      let sections: JsonValue | null = null;
+      try {
+        sections = sectionsText ? (JSON.parse(sectionsText) as JsonValue) : null;
+      } catch {
+        setSaving(false);
+        setError("Structured sections must contain valid JSON.");
+        return;
+      }
+      input = {
+        slug: String(data.get("slug")).trim().toLowerCase().replace(/\s+/g, "-"),
+        title: String(data.get("title")),
+        body: text("body"),
+        sections,
+        seoTitle: text("seoTitle"),
+        seoDescription: text("seoDescription"),
+        publicationStatus: String(data.get("publicationStatus")) as ContentPageInput["publicationStatus"],
       };
     }
 
@@ -130,7 +150,8 @@ export function AdminCmsDialog({
     }
   };
 
-  const title = `${value ? "Edit" : "Create"} ${kind === "giving" ? "Giving Program" : kind[0].toUpperCase() + kind.slice(1)}`;
+  const itemLabel = kind === "giving" ? "Giving Program" : kind === "contentPage" ? "Content Page" : kind[0].toUpperCase() + kind.slice(1);
+  const title = `${value ? "Edit" : "Create"} ${itemLabel}`;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center bg-[#04183a]/60 p-0 backdrop-blur-sm sm:items-center sm:p-6" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
@@ -214,6 +235,20 @@ export function AdminCmsDialog({
                 <Field label="Status"><select className={fieldClass} name="status" defaultValue={item?.status ?? "ACTIVE"}>{["ACTIVE", "INACTIVE", "ARCHIVED"].map(s => <option key={s}>{s}</option>)}</select></Field>
               </div>
               <Field label="Description"><textarea className={fieldClass} rows={3} name="description" defaultValue={item?.description ?? ""} /></Field>
+            </>;
+          })()}
+          {kind === "contentPage" && (() => {
+            const item = value as ContentPage | null;
+            return <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Title"><input className={fieldClass} name="title" required defaultValue={item?.title} /></Field>
+                <Field label="Slug"><input className={fieldClass} name="slug" required pattern="[a-z0-9-]+" placeholder="about-us" defaultValue={item?.slug ?? ""} /></Field>
+                <Field label="SEO title"><input className={fieldClass} name="seoTitle" maxLength={70} defaultValue={item?.seoTitle ?? ""} /></Field>
+                <Field label="Publication"><select className={fieldClass} name="publicationStatus" defaultValue={item?.publicationStatus ?? "DRAFT"}>{["DRAFT", "PUBLISHED", "ARCHIVED"].map(s => <option key={s}>{s}</option>)}</select></Field>
+              </div>
+              <Field label="SEO description"><textarea className={fieldClass} rows={2} name="seoDescription" maxLength={170} defaultValue={item?.seoDescription ?? ""} /></Field>
+              <Field label="Page body"><textarea className={fieldClass} rows={8} name="body" defaultValue={item?.body ?? ""} /></Field>
+              <Field label="Structured sections (JSON)"><textarea className={`${fieldClass} font-mono text-xs`} rows={8} name="sections" placeholder='[{"heading":"Welcome","body":"..."}]' defaultValue={item?.sections ? JSON.stringify(item.sections, null, 2) : ""} /></Field>
             </>;
           })()}
           {error && <div className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</div>}
