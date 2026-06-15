@@ -25,6 +25,7 @@ import type {
   Sermon,
   ServiceTime,
 } from "@/types";
+import { SermonMediaPlayer } from "@/app/components/media/SermonMediaPlayer";
 
 export type PublicDialogMode =
   | "visit"
@@ -260,7 +261,7 @@ export function PublicActionDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="public-dialog-title"
-        className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-card shadow-2xl sm:rounded-3xl"
+        className={`max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-card shadow-2xl sm:rounded-3xl ${mode === "sermon" ? "max-w-4xl" : "max-w-2xl"}`}
       >
         <div className="sticky top-0 z-10 flex items-start justify-between border-b border-border bg-card/95 px-6 py-5 backdrop-blur-md sm:px-8">
           <div>
@@ -428,21 +429,12 @@ export function PublicActionDialog({
 
           {mode === "sermon" && sermon && (
             <div className="space-y-6">
+              <SermonMediaPlayer sermon={sermon} />
               <p className="text-lg leading-relaxed text-muted-foreground">{sermon.description}</p>
               <div className="rounded-2xl bg-[#eef4fc] p-5 text-sm text-[#0d1b2e]">
                 <div className="font-black">{sermon.preacherName ?? "LFLMI Teaching Team"}</div>
                 <div className="mt-1 text-muted-foreground">{sermon.bibleText ?? sermon.series}</div>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {sermon.videoUrl && <a href={sermon.videoUrl} target="_blank" rel="noreferrer" className="rounded-full bg-[#0E5AA7] px-6 py-3.5 text-center text-sm font-black text-white">Watch Sermon</a>}
-                {sermon.audioUrl && <a href={sermon.audioUrl} target="_blank" rel="noreferrer" className="rounded-full border-2 border-border px-6 py-3.5 text-center text-sm font-black text-foreground">Listen to Audio</a>}
-                {sermon.notesUrl && <a href={sermon.notesUrl} target="_blank" rel="noreferrer" className="rounded-full border-2 border-border px-6 py-3.5 text-center text-sm font-black text-foreground">Open Notes</a>}
-              </div>
-              {!sermon.videoUrl && !sermon.audioUrl && !sermon.notesUrl && (
-                <p className="rounded-2xl bg-[#eef4fc] p-4 text-sm text-muted-foreground">
-                  Media for this message will be available soon.
-                </p>
-              )}
             </div>
           )}
 
