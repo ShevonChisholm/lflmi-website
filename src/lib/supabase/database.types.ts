@@ -135,6 +135,72 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["event_registrations"]["Insert"]>;
         Relationships: [];
       };
+      giving_programs: {
+        Row: {
+          id: string;
+          name: string;
+          description: Nullable<string>;
+          goal_amount: Nullable<number>;
+          amount_raised: number;
+          currency: string;
+          color: Nullable<string>;
+          icon: Nullable<string>;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: Nullable<string>;
+          goal_amount?: Nullable<number>;
+          amount_raised?: number;
+          currency?: string;
+          color?: Nullable<string>;
+          icon?: Nullable<string>;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["giving_programs"]["Insert"]>;
+        Relationships: [];
+      };
+      giving_transactions: {
+        Row: {
+          id: string;
+          program_id: Nullable<string>;
+          person_id: Nullable<string>;
+          giver_name: Nullable<string>;
+          type: string;
+          amount: number;
+          currency: string;
+          payment_method: string;
+          received_at: string;
+          reference: Nullable<string>;
+          is_anonymous: boolean;
+          notes: Nullable<string>;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          program_id?: Nullable<string>;
+          person_id?: Nullable<string>;
+          giver_name?: Nullable<string>;
+          type?: string;
+          amount: number;
+          currency?: string;
+          payment_method?: string;
+          received_at?: string;
+          reference?: Nullable<string>;
+          is_anonymous?: boolean;
+          notes?: Nullable<string>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["giving_transactions"]["Insert"]>;
+        Relationships: [];
+      };
       events: {
         Row: {
           id: string;

@@ -1,155 +1,18 @@
-import { TrendingUp, Plus, ArrowUpRight, ArrowDownLeft, DollarSign } from "lucide-react";
-import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
-
-const programs = [
-  { id: 1, name: "General Tithe & Offering", description: "Weekly tithes and general offerings from the congregation.", goal: 1000000, raised: 742000, color: "#0E5AA7", icon: "🙏", trend: [60, 72, 65, 80, 78, 88, 85, 92] },
-  { id: 2, name: "Building Fund", description: "Raising funds for the new sanctuary construction project.", goal: 5000000, raised: 1850000, color: "#D7261E", icon: "🏛️", trend: [30, 38, 42, 50, 48, 55, 62, 67] },
-  { id: 3, name: "Global Missions Fund", description: "Supporting missionaries and outreach in 8 nations.", goal: 600000, raised: 480000, color: "#16a34a", icon: "🌍", trend: [55, 60, 58, 65, 72, 70, 75, 80] },
-  { id: 4, name: "Youth Ministry Fund", description: "Funding youth programs, retreats, and discipleship materials.", goal: 200000, raised: 142000, color: "#d97706", icon: "⚡", trend: [45, 50, 48, 55, 60, 65, 68, 71] },
-];
-
-const transactions = [
-  { id: 1, name: "Emmanuel A.", type: "Tithe", program: "General Tithe & Offering", amount: 25000, date: "Jun 22, 2025", method: "Bank Transfer" },
-  { id: 2, name: "Grace O.", type: "Offering", program: "Building Fund", amount: 10000, date: "Jun 22, 2025", method: "Card" },
-  { id: 3, name: "Anonymous", type: "Donation", program: "Global Missions Fund", amount: 50000, date: "Jun 21, 2025", method: "Bank Transfer" },
-  { id: 4, name: "David E.", type: "Tithe", program: "General Tithe & Offering", amount: 15000, date: "Jun 21, 2025", method: "Cash" },
-  { id: 5, name: "Fatima A.", type: "Donation", program: "Youth Ministry Fund", amount: 5000, date: "Jun 20, 2025", method: "Card" },
-  { id: 6, name: "Samuel T.", type: "Tithe", program: "General Tithe & Offering", amount: 30000, date: "Jun 20, 2025", method: "Bank Transfer" },
-  { id: 7, name: "Mary J.", type: "Offering", program: "Building Fund", amount: 20000, date: "Jun 19, 2025", method: "Card" },
-  { id: 8, name: "Peter O.", type: "Donation", program: "Global Missions Fund", amount: 8000, date: "Jun 18, 2025", method: "Cash" },
-];
-
-const methodColors: Record<string, string> = {
-  "Bank Transfer": "bg-[#0E5AA7]/10 text-[#0E5AA7]",
-  Card: "bg-green-50 text-green-700",
-  Cash: "bg-orange-50 text-orange-600",
-};
-
-const fmt = (n: number) => `₦${n.toLocaleString()}`;
-const pct = (raised: number, goal: number) => Math.round((raised / goal) * 100);
-
-export default function Give() {
-  return (
-    <div className="p-5 lg:p-7 space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-[#0d1b2e]">Give Programs</h1>
-          <p className="text-sm text-[#6b7897] mt-1">Track giving programs, goals, and transactions</p>
-        </div>
-        <button className="flex items-center gap-2 bg-[#0E5AA7] hover:bg-[#0a4a8a] text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
-          <Plus size={16} />New Program
-        </button>
-      </div>
-
-      {/* Summary strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          { label: "Total Received (Jun)", value: "₦212,000", change: "+8.7%", up: true, icon: ArrowDownLeft, color: "#16a34a" },
-          { label: "Total Programs", value: "4", change: "All active", up: true, icon: DollarSign, color: "#0E5AA7" },
-          { label: "Online Giving", value: "68%", change: "of all transactions", up: true, icon: ArrowUpRight, color: "#7c3aed" },
-          { label: "Avg. Gift Size", value: "₦20,375", change: "+12% vs May", up: true, icon: TrendingUp, color: "#d97706" },
-        ].map((s) => (
-          <div key={s.label} className="bg-white rounded-xl p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${s.color}15` }}>
-                <s.icon size={16} style={{ color: s.color }} />
-              </div>
-              <span className="text-xs font-bold text-green-600 flex items-center gap-0.5"><TrendingUp size={11} />{s.change}</span>
-            </div>
-            <div className="text-2xl font-black text-[#0d1b2e] leading-none mb-1">{s.value}</div>
-            <div className="text-xs text-[#6b7897]">{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Programs */}
-      <div>
-        <h2 className="text-base font-black text-[#0d1b2e] mb-4">Giving Programs</h2>
-        <div className="grid md:grid-cols-2 gap-4">
-          {programs.map((p) => {
-            const progress = pct(p.raised, p.goal);
-            const trendData = p.trend.map((v, i) => ({ i, v }));
-            return (
-              <div key={p.id} className="bg-white rounded-2xl p-5 shadow-sm">
-                <div className="flex items-start gap-3 mb-4">
-                  <span className="text-2xl">{p.icon}</span>
-                  <div className="flex-1">
-                    <h3 className="text-base font-black text-[#0d1b2e] leading-tight">{p.name}</h3>
-                    <p className="text-xs text-[#6b7897] mt-0.5">{p.description}</p>
-                  </div>
-                  <div className="h-10 w-20 shrink-0">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={trendData}>
-                        <defs>
-                          <linearGradient id={`g${p.id}`} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor={p.color} stopOpacity={0.2} />
-                            <stop offset="100%" stopColor={p.color} stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <Area type="monotone" dataKey="v" stroke={p.color} strokeWidth={2} fill={`url(#g${p.id})`} dot={false} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-                <div className="flex items-end justify-between mb-2">
-                  <div>
-                    <div className="text-xl font-black" style={{ color: p.color }}>{fmt(p.raised)}</div>
-                    <div className="text-xs text-[#6b7897]">raised of {fmt(p.goal)} goal</div>
-                  </div>
-                  <div className="text-2xl font-black text-[#0d1b2e]">{progress}%</div>
-                </div>
-                <div className="h-2.5 bg-[#e8eef6] rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(progress, 100)}%`, backgroundColor: p.color }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Recent Transactions */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-black text-[#0d1b2e]">Recent Transactions</h2>
-          <button className="text-xs font-bold text-[#0E5AA7] hover:text-[#0a4a8a] transition-colors">Export CSV</button>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-[#e8eef6]">
-                  <th className="text-left text-[10px] font-black text-[#6b7897] tracking-widest uppercase px-5 py-3.5">Giver</th>
-                  <th className="text-left text-[10px] font-black text-[#6b7897] tracking-widest uppercase px-4 py-3.5 hidden sm:table-cell">Program</th>
-                  <th className="text-left text-[10px] font-black text-[#6b7897] tracking-widest uppercase px-4 py-3.5 hidden md:table-cell">Type</th>
-                  <th className="text-left text-[10px] font-black text-[#6b7897] tracking-widest uppercase px-4 py-3.5 hidden lg:table-cell">Method</th>
-                  <th className="text-left text-[10px] font-black text-[#6b7897] tracking-widest uppercase px-4 py-3.5 hidden sm:table-cell">Date</th>
-                  <th className="text-right text-[10px] font-black text-[#6b7897] tracking-widest uppercase px-5 py-3.5">Amount</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#e8eef6]">
-                {transactions.map((t) => (
-                  <tr key={t.id} className="hover:bg-[#f8fafd] transition-colors">
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#0E5AA7]/10 text-[#0E5AA7] text-xs font-black flex items-center justify-center">{t.name.slice(0, 2).toUpperCase()}</div>
-                        <span className="text-sm font-semibold text-[#0d1b2e]">{t.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3.5 hidden sm:table-cell"><span className="text-xs text-[#6b7897]">{t.program}</span></td>
-                    <td className="px-4 py-3.5 hidden md:table-cell"><span className="text-xs font-semibold text-[#0d1b2e]">{t.type}</span></td>
-                    <td className="px-4 py-3.5 hidden lg:table-cell"><span className={`text-xs font-bold px-2 py-0.5 rounded-full ${methodColors[t.method]}`}>{t.method}</span></td>
-                    <td className="px-4 py-3.5 hidden sm:table-cell"><span className="text-xs text-[#6b7897]">{t.date}</span></td>
-                    <td className="px-5 py-3.5 text-right">
-                      <span className="text-sm font-black text-green-700">{fmt(t.amount)}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+import { useEffect, useState } from "react";
+import { Download, Edit2, Loader2, Plus, Trash2 } from "lucide-react";
+import { AdminCmsDialog } from "@/app/components/admin/AdminCmsDialog";
+import { AdminConfirmDialog } from "@/app/components/admin/AdminConfirmDialog";
+import { createGivingProgram, deleteGivingProgram, getGivingPrograms, getGivingTransactions, updateGivingProgram, type GivingProgramInput } from "@/lib/data";
+import type { GivingProgram, GivingTransaction } from "@/types";
+const money=(amount:number,currency:string)=>new Intl.NumberFormat("en-JM",{style:"currency",currency}).format(amount);
+export default function Give(){
+ const[programs,setPrograms]=useState<GivingProgram[]>([]),[transactions,setTransactions]=useState<GivingTransaction[]>([]),[editing,setEditing]=useState<GivingProgram|null|undefined>(),[deleting,setDeleting]=useState<GivingProgram|null>(null),[busy,setBusy]=useState(true),[error,setError]=useState("");
+ useEffect(()=>{void(async()=>{try{const[p,t]=await Promise.all([getGivingPrograms(),getGivingTransactions()]);setPrograms(p);setTransactions(t)}catch(e){setError(e instanceof Error?e.message:"Unable to load giving data.")}finally{setBusy(false)}})()},[]);
+ const save=async(input:GivingProgramInput)=>{const saved=editing?await updateGivingProgram(editing.id,input):await createGivingProgram(input);setPrograms(list=>editing?list.map(i=>i.id===saved.id?saved:i):[saved,...list])};
+ const remove=async()=>{if(!deleting)return;setBusy(true);try{await deleteGivingProgram(deleting.id);setPrograms(list=>list.filter(i=>i.id!==deleting.id));setDeleting(null)}catch(e){setError(e instanceof Error?e.message:"Unable to delete program.")}finally{setBusy(false)}};
+ const exportCsv=()=>{const rows=[["Giver","Type","Amount","Currency","Method","Received"],...transactions.map(t=>[t.isAnonymous?"Anonymous":t.giverName??"",t.type,String(t.amount),t.currency,t.paymentMethod,t.receivedAt])];const blob=new Blob([rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(",")).join("\n")],{type:"text/csv"});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download="giving-transactions.csv";link.click();URL.revokeObjectURL(link.href)};
+ return <div className="space-y-6 p-5 lg:p-7"><div className="flex items-start justify-between"><div><h1 className="text-2xl font-black text-[#0d1b2e]">Give Programs</h1><p className="mt-1 text-sm text-[#6b7897]">Track giving programs, goals, and transactions in Jamaican dollars</p></div><button onClick={()=>setEditing(null)} className="flex items-center gap-2 rounded-xl bg-[#0E5AA7] px-4 py-2.5 text-sm font-bold text-white"><Plus size={16}/>New Program</button></div>
+ {error&&<div className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</div>}{busy&&programs.length===0?<div className="flex justify-center p-16"><Loader2 className="animate-spin text-[#0E5AA7]"/></div>:<div className="grid gap-4 md:grid-cols-2">{programs.map(item=>{const progress=item.goalAmount?Math.round(item.amountRaised/item.goalAmount*100):0;return <div key={item.id} className="rounded-2xl bg-white p-5 shadow-sm"><div className="mb-4 flex items-start justify-between"><div><h3 className="font-black text-[#0d1b2e]">{item.name}</h3><p className="mt-1 text-xs text-[#6b7897]">{item.description}</p></div><div className="flex gap-1"><button onClick={()=>setEditing(item)} className="rounded-lg p-2 text-[#6b7897] hover:bg-[#f0f4f9]"><Edit2 size={14}/></button><button onClick={()=>setDeleting(item)} className="rounded-lg p-2 text-[#D7261E] hover:bg-red-50"><Trash2 size={14}/></button></div></div><div className="mb-2 flex items-end justify-between"><div><div className="text-xl font-black" style={{color:item.color??"#0E5AA7"}}>{money(item.amountRaised,item.currency)}</div><div className="text-xs text-[#6b7897]">of {item.goalAmount?money(item.goalAmount,item.currency):"open goal"}</div></div><div className="text-2xl font-black text-[#0d1b2e]">{progress}%</div></div><div className="h-2.5 overflow-hidden rounded-full bg-[#e8eef6]"><div className="h-full rounded-full" style={{width:`${Math.min(progress,100)}%`,backgroundColor:item.color??"#0E5AA7"}}/></div></div>})}</div>}
+ <div><div className="mb-4 flex items-center justify-between"><h2 className="font-black text-[#0d1b2e]">Recent Transactions</h2><button onClick={exportCsv} disabled={!transactions.length} className="flex items-center gap-1.5 text-xs font-bold text-[#0E5AA7] disabled:opacity-40"><Download size={13}/>Export CSV</button></div><div className="overflow-hidden rounded-2xl bg-white shadow-sm"><div className="overflow-x-auto"><table className="w-full"><thead><tr className="border-b border-[#e8eef6] text-left text-[10px] uppercase tracking-widest text-[#6b7897]"><th className="px-5 py-4">Giver</th><th className="px-4 py-4">Type</th><th className="px-4 py-4">Method</th><th className="px-4 py-4">Received</th><th className="px-5 py-4 text-right">Amount</th></tr></thead><tbody className="divide-y divide-[#e8eef6]">{transactions.map(t=><tr key={t.id}><td className="px-5 py-4 text-sm font-semibold text-[#0d1b2e]">{t.isAnonymous?"Anonymous":t.giverName}</td><td className="px-4 py-4 text-xs text-[#6b7897]">{t.type}</td><td className="px-4 py-4 text-xs text-[#6b7897]">{t.paymentMethod}</td><td className="px-4 py-4 text-xs text-[#6b7897]">{new Date(t.receivedAt).toLocaleDateString()}</td><td className="px-5 py-4 text-right text-sm font-black text-green-700">{money(t.amount,t.currency)}</td></tr>)}</tbody></table></div>{!transactions.length&&<div className="p-8 text-center text-sm text-[#6b7897]">No transactions recorded yet.</div>}</div></div>
+ {editing!==undefined&&<AdminCmsDialog kind="giving" value={editing} onClose={()=>setEditing(undefined)} onSave={save}/>} {deleting&&<AdminConfirmDialog title="Delete giving program?" message={`Transactions remain preserved, but "${deleting.name}" will be removed.`} busy={busy} onCancel={()=>setDeleting(null)} onConfirm={()=>void remove()}/>}</div>
 }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { Eye, EyeOff, Lock, Mail, AlertCircle } from "lucide-react";
 import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
 import logoImg from "@/imports/PHOTO-2025-11-20-06-26-28-removebg-preview.png";
+import { supabase } from "@/lib/supabase/client";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -16,12 +17,14 @@ export default function Login() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    if (email === "admin@lflmi.org" && password === "password123") {
-      localStorage.setItem("lflmi_admin_auth", "true");
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (!signInError) {
       navigate("/admin/dashboard");
     } else {
-      setError("Invalid email or password. Please try again.");
+      setError(signInError.message);
     }
     setLoading(false);
   };
@@ -110,10 +113,9 @@ export default function Login() {
               </button>
             </form>
 
-            <div className="mt-6 p-4 bg-[#f0f4f9] rounded-xl">
-              <p className="text-xs text-[#6b7897] font-semibold mb-1">Demo credentials</p>
-              <p className="text-xs text-[#0d1b2e] font-mono">admin@lflmi.org / password123</p>
-            </div>
+            <p className="mt-6 text-center text-xs leading-relaxed text-[#6b7897]">
+              Access is limited to active church administrators.
+            </p>
           </div>
         </div>
 

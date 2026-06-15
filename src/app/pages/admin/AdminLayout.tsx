@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
 import logoImg from "@/imports/PHOTO-2025-11-20-06-26-28-removebg-preview.png";
+import { supabase } from "@/lib/supabase/client";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
@@ -41,21 +42,33 @@ export default function AdminLayout() {
   const [notifications] = useState(5);
 
   useEffect(() => {
-    if (!localStorage.getItem("lflmi_admin_auth")) {
-      navigate("/admin/login");
-    }
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) navigate("/admin/login");
+    });
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) navigate("/admin/login");
+    });
+    return () => data.subscription.unsubscribe();
   }, [navigate]);
 
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("lflmi_admin_auth");
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     navigate("/admin/login");
   };
 
   const pageTitle = pageTitles[location.pathname] ?? "Admin";
+  const handleAdminSearch = (query: string) => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return;
+    const match = navItems.find((item) =>
+      item.label.toLowerCase().includes(normalized),
+    );
+    if (match) navigate(match.path);
+  };
 
   return (
     <div className="flex h-screen bg-[#f0f4f9] overflow-hidden" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -110,7 +123,7 @@ export default function AdminLayout() {
 
         {/* Bottom */}
         <div className="border-t border-[#e8eef6] p-3 shrink-0 space-y-0.5">
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#6b7897] hover:bg-[#f0f4f9] hover:text-[#0d1b2e] transition-all w-full group">
+          <button onClick={() => navigate("/admin/about")} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#6b7897] hover:bg-[#f0f4f9] hover:text-[#0d1b2e] transition-all w-full group">
             <Settings size={18} />Settings
           </button>
           <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#D7261E]/70 hover:bg-[#D7261E]/8 hover:text-[#D7261E] transition-all w-full">
@@ -148,6 +161,12 @@ export default function AdminLayout() {
               <input
                 type="text"
                 placeholder="Search..."
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    handleAdminSearch(event.currentTarget.value);
+                    event.currentTarget.value = "";
+                  }
+                }}
                 className="w-full pl-9 pr-4 py-2 bg-[#f0f4f9] rounded-xl text-sm text-[#0d1b2e] placeholder:text-[#6b7897]/60 outline-none focus:ring-2 focus:ring-[#0E5AA7]/20 transition-all"
               />
             </div>
@@ -159,14 +178,14 @@ export default function AdminLayout() {
               View Site
             </a>
             {/* Notifications */}
-            <button className="relative p-2 rounded-xl text-[#6b7897] hover:bg-[#f0f4f9] hover:text-[#0d1b2e] transition-colors">
+            <button onClick={() => navigate("/admin/prayer-requests")} aria-label="View notifications" className="relative p-2 rounded-xl text-[#6b7897] hover:bg-[#f0f4f9] hover:text-[#0d1b2e] transition-colors">
               <Bell size={18} />
               {notifications > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 bg-[#D7261E] text-white text-[9px] font-black rounded-full flex items-center justify-center">{notifications}</span>
               )}
             </button>
             {/* Avatar */}
-            <div className="w-8 h-8 rounded-full bg-[#0E5AA7] flex items-center justify-center text-white text-xs font-black cursor-pointer">EA</div>
+            <button onClick={() => navigate("/admin/about")} aria-label="Open settings" className="w-8 h-8 rounded-full bg-[#0E5AA7] flex items-center justify-center text-white text-xs font-black cursor-pointer">EA</button>
           </div>
         </header>
 

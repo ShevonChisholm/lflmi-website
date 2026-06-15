@@ -7,6 +7,7 @@ import type {
   PrayerRequestUrgency,
   PreferredContactMethod,
   PublicationStatus,
+  RecordStatus,
   UUID,
 } from "@/types";
 
@@ -144,6 +145,47 @@ export interface MinistryInput {
 }
 
 export type MinistryUpdateInput = Partial<MinistryInput>;
+
+export interface GivingProgramInput {
+  name: string;
+  description?: string | null;
+  goalAmount?: number | null;
+  amountRaised?: number;
+  currency?: string;
+  color?: string | null;
+  icon?: string | null;
+  status?: RecordStatus;
+}
+
+export type GivingProgramUpdateInput = Partial<GivingProgramInput>;
+
+export interface ServiceTimeInput {
+  dayOfWeek: string;
+  label: string;
+  time: string;
+  location?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
+}
+
+export type ServiceTimeUpdateInput = Partial<ServiceTimeInput>;
+
+export interface ChurchSettingsUpdateInput {
+  churchName?: string;
+  tagline?: string | null;
+  bio?: string | null;
+  vision?: string | null;
+  mission?: string | null;
+  foundedYear?: number | null;
+  seniorPastor?: string | null;
+  associatePastor?: string | null;
+  logoUrl?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  website?: string | null;
+  socialLinks?: JsonValue;
+}
 
 export interface ContentPageInput {
   slug: string;

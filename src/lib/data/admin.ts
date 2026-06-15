@@ -1,11 +1,15 @@
 import type {
   ContentPage,
+  ChurchSettings,
   Event,
+  GivingProgram,
+  GivingTransaction,
   Ministry,
   Person,
   PlannedVisit,
   PrayerRequest,
   Sermon,
+  ServiceTime,
   UUID,
 } from "@/types";
 
@@ -18,8 +22,11 @@ import { requireData, throwIfDataError } from "./errors";
 import type {
   ContentPageInput,
   ContentPageUpdateInput,
+  ChurchSettingsUpdateInput,
   EventInput,
   EventUpdateInput,
+  GivingProgramInput,
+  GivingProgramUpdateInput,
   MinistryInput,
   MinistryUpdateInput,
   PersonUpdateInput,
@@ -27,15 +34,21 @@ import type {
   PrayerRequestUpdateInput,
   SermonInput,
   SermonUpdateInput,
+  ServiceTimeInput,
+  ServiceTimeUpdateInput,
 } from "./inputs";
 import {
   mapContentPage,
+  mapChurchSettings,
   mapEvent,
+  mapGivingProgram,
+  mapGivingTransaction,
   mapMinistry,
   mapPerson,
   mapPlannedVisit,
   mapPrayerRequest,
   mapSermon,
+  mapServiceTime,
 } from "./mappers";
 
 export interface AdminListOptions {
@@ -544,4 +557,152 @@ export const updateContentPage = async (
 export const deleteContentPage = async (id: UUID): Promise<void> => {
   const { error } = await supabase.from("content_pages").delete().eq("id", id);
   throwIfDataError(error, "Unable to delete the content page.");
+};
+
+export const updateChurchSettings = async (
+  id: UUID,
+  input: ChurchSettingsUpdateInput,
+): Promise<ChurchSettings> => {
+  const { data, error } = await supabase
+    .from("church_settings")
+    .update({
+      church_name: input.churchName,
+      tagline: input.tagline,
+      bio: input.bio,
+      vision: input.vision,
+      mission: input.mission,
+      founded_year: input.foundedYear,
+      senior_pastor: input.seniorPastor,
+      associate_pastor: input.associatePastor,
+      logo_url: input.logoUrl,
+      address: input.address,
+      phone: input.phone,
+      email: input.email,
+      website: input.website,
+      social_links: input.socialLinks,
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  return mapChurchSettings(
+    requireData(data, error, "Unable to update church settings."),
+  );
+};
+
+export const getServiceTimes = async (): Promise<ServiceTime[]> => {
+  const { data, error } = await supabase
+    .from("service_times")
+    .select("*")
+    .order("sort_order", { ascending: true });
+  throwIfDataError(error, "Unable to load service times.");
+  return (data ?? []).map(mapServiceTime);
+};
+
+export const createServiceTime = async (
+  input: ServiceTimeInput,
+): Promise<ServiceTime> => {
+  const { data, error } = await supabase
+    .from("service_times")
+    .insert({
+      day_of_week: input.dayOfWeek,
+      label: input.label,
+      time: input.time,
+      location: input.location ?? null,
+      sort_order: input.sortOrder ?? 0,
+      is_active: input.isActive ?? true,
+    })
+    .select("*")
+    .single();
+  return mapServiceTime(requireData(data, error, "Unable to create service time."));
+};
+
+export const updateServiceTime = async (
+  id: UUID,
+  input: ServiceTimeUpdateInput,
+): Promise<ServiceTime> => {
+  const { data, error } = await supabase
+    .from("service_times")
+    .update({
+      day_of_week: input.dayOfWeek,
+      label: input.label,
+      time: input.time,
+      location: input.location,
+      sort_order: input.sortOrder,
+      is_active: input.isActive,
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+  return mapServiceTime(requireData(data, error, "Unable to update service time."));
+};
+
+export const deleteServiceTime = async (id: UUID): Promise<void> => {
+  const { error } = await supabase.from("service_times").delete().eq("id", id);
+  throwIfDataError(error, "Unable to delete service time.");
+};
+
+export const getGivingPrograms = async (): Promise<GivingProgram[]> => {
+  const { data, error } = await supabase
+    .from("giving_programs")
+    .select("*")
+    .order("created_at", { ascending: false });
+  throwIfDataError(error, "Unable to load giving programs.");
+  return (data ?? []).map(mapGivingProgram);
+};
+
+export const createGivingProgram = async (
+  input: GivingProgramInput,
+): Promise<GivingProgram> => {
+  const { data, error } = await supabase
+    .from("giving_programs")
+    .insert({
+      name: input.name,
+      description: input.description ?? null,
+      goal_amount: input.goalAmount ?? null,
+      amount_raised: input.amountRaised ?? 0,
+      currency: input.currency ?? "JMD",
+      color: input.color ?? "#0E5AA7",
+      icon: input.icon ?? null,
+      status: input.status ?? "ACTIVE",
+    })
+    .select("*")
+    .single();
+  return mapGivingProgram(requireData(data, error, "Unable to create giving program."));
+};
+
+export const updateGivingProgram = async (
+  id: UUID,
+  input: GivingProgramUpdateInput,
+): Promise<GivingProgram> => {
+  const { data, error } = await supabase
+    .from("giving_programs")
+    .update({
+      name: input.name,
+      description: input.description,
+      goal_amount: input.goalAmount,
+      amount_raised: input.amountRaised,
+      currency: input.currency,
+      color: input.color,
+      icon: input.icon,
+      status: input.status,
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+  return mapGivingProgram(requireData(data, error, "Unable to update giving program."));
+};
+
+export const deleteGivingProgram = async (id: UUID): Promise<void> => {
+  const { error } = await supabase.from("giving_programs").delete().eq("id", id);
+  throwIfDataError(error, "Unable to delete giving program.");
+};
+
+export const getGivingTransactions = async (): Promise<GivingTransaction[]> => {
+  const { data, error } = await supabase
+    .from("giving_transactions")
+    .select("*")
+    .order("received_at", { ascending: false });
+  throwIfDataError(error, "Unable to load giving transactions.");
+  return (data ?? []).map(mapGivingTransaction);
 };

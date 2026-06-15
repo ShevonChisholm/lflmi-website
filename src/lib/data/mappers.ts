@@ -1,6 +1,8 @@
 import type {
   ContentPage,
   Event,
+  GivingProgram,
+  GivingTransaction,
   Ministry,
   Person,
   PlannedVisit,
@@ -193,6 +195,41 @@ export const mapChurchSettings = (
   email: row.email,
   website: row.website,
   socialLinks: mapSocialLinks(row.social_links),
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapGivingProgram = (
+  row: TableRow<"giving_programs">,
+): GivingProgram => ({
+  id: row.id,
+  name: row.name,
+  description: row.description,
+  goalAmount: row.goal_amount,
+  amountRaised: row.amount_raised,
+  currency: row.currency,
+  color: row.color,
+  icon: row.icon,
+  status: row.status as GivingProgram["status"],
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapGivingTransaction = (
+  row: TableRow<"giving_transactions">,
+): GivingTransaction => ({
+  id: row.id,
+  programId: row.program_id,
+  personId: row.person_id,
+  giverName: row.giver_name,
+  type: row.type as GivingTransaction["type"],
+  amount: row.amount,
+  currency: row.currency,
+  paymentMethod: row.payment_method as GivingTransaction["paymentMethod"],
+  receivedAt: row.received_at,
+  reference: row.reference,
+  isAnonymous: row.is_anonymous,
+  notes: row.notes,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
