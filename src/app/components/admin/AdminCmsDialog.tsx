@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Loader2, X } from "lucide-react";
+import { MediaUploadField } from "@/app/components/admin/MediaUploadField";
 import type { ContentPage, Event, GivingProgram, JsonValue, Ministry, Sermon } from "@/types";
 import type {
   ContentPageInput,
@@ -101,6 +102,7 @@ export function AdminCmsDialog({
         leaderName: text("leaderName"),
         contactEmail: text("contactEmail"),
         contactPhone: text("contactPhone"),
+        imageUrl: text("imageUrl"),
         meetingSchedule: text("meetingSchedule"),
         programs: String(data.get("programs") || "").split(",").map((item) => item.trim()).filter(Boolean),
         memberCount: number("memberCount") ?? 0,
@@ -177,10 +179,10 @@ export function AdminCmsDialog({
               </div>
               <Field label="Description"><textarea className={fieldClass} rows={3} name="description" defaultValue={sermon?.description ?? ""} /></Field>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Video URL"><input className={fieldClass} type="url" name="videoUrl" defaultValue={sermon?.videoUrl ?? ""} /></Field>
-                <Field label="Audio URL"><input className={fieldClass} type="url" name="audioUrl" defaultValue={sermon?.audioUrl ?? ""} /></Field>
-                <Field label="Notes URL"><input className={fieldClass} type="url" name="notesUrl" defaultValue={sermon?.notesUrl ?? ""} /></Field>
-                <Field label="Thumbnail URL"><input className={fieldClass} type="url" name="thumbnailUrl" defaultValue={sermon?.thumbnailUrl ?? ""} /></Field>
+                <MediaUploadField label="Video" name="videoUrl" kind="video" folder="sermons/videos" initialValue={sermon?.videoUrl} />
+                <MediaUploadField label="Audio" name="audioUrl" kind="audio" folder="sermons/audio" initialValue={sermon?.audioUrl} />
+                <MediaUploadField label="Notes" name="notesUrl" kind="document" folder="sermons/notes" initialValue={sermon?.notesUrl} />
+                <MediaUploadField label="Thumbnail" name="thumbnailUrl" kind="image" folder="sermons/thumbnails" initialValue={sermon?.thumbnailUrl} />
                 <Field label="Publication"><select className={fieldClass} name="publicationStatus" defaultValue={sermon?.publicationStatus ?? "DRAFT"}>{["DRAFT", "PUBLISHED", "ARCHIVED"].map(s => <option key={s}>{s}</option>)}</select></Field>
               </div>
             </>;
@@ -196,10 +198,10 @@ export function AdminCmsDialog({
                 <Field label="Location"><input className={fieldClass} name="location" defaultValue={item?.location ?? ""} /></Field>
                 <Field label="Organizer"><input className={fieldClass} name="organizerName" defaultValue={item?.organizerName ?? ""} /></Field>
                 <Field label="Maximum attendees"><input className={fieldClass} type="number" min="1" name="maxAttendees" defaultValue={item?.maxAttendees ?? ""} /></Field>
-                <Field label="Image URL"><input className={fieldClass} type="url" name="imageUrl" defaultValue={item?.imageUrl ?? ""} /></Field>
                 <Field label="Event status"><select className={fieldClass} name="status" defaultValue={item?.status ?? "UPCOMING"}>{["DRAFT", "UPCOMING", "PAST", "CANCELLED"].map(s => <option key={s}>{s}</option>)}</select></Field>
                 <Field label="Publication"><select className={fieldClass} name="publicationStatus" defaultValue={item?.publicationStatus ?? "DRAFT"}>{["DRAFT", "PUBLISHED", "ARCHIVED"].map(s => <option key={s}>{s}</option>)}</select></Field>
               </div>
+              <MediaUploadField label="Event image" name="imageUrl" kind="image" folder="events" initialValue={item?.imageUrl} />
               <Field label="Description"><textarea className={fieldClass} rows={3} name="description" defaultValue={item?.description ?? ""} /></Field>
               <label className="flex items-center gap-2 text-sm font-semibold text-[#0d1b2e]"><input type="checkbox" name="isRegistrationRequired" defaultChecked={item?.isRegistrationRequired} />Registration required</label>
             </>;
@@ -218,6 +220,7 @@ export function AdminCmsDialog({
                 <Field label="Volunteers"><input className={fieldClass} type="number" min="0" name="volunteerCount" defaultValue={item?.volunteerCount ?? 0} /></Field>
                 <Field label="Status"><select className={fieldClass} name="status" defaultValue={item?.status ?? "ACTIVE"}>{["ACTIVE", "INACTIVE", "ON_HOLD"].map(s => <option key={s}>{s}</option>)}</select></Field>
               </div>
+              <MediaUploadField label="Ministry image" name="imageUrl" kind="image" folder="ministries" initialValue={item?.imageUrl} />
               <Field label="Programs, comma separated"><input className={fieldClass} name="programs" defaultValue={item?.programs.join(", ")} /></Field>
               <Field label="Description"><textarea className={fieldClass} rows={3} name="description" defaultValue={item?.description ?? ""} /></Field>
             </>;

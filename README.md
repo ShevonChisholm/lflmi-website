@@ -45,6 +45,9 @@ SQL editor or CLI:
 1. `202606140001_initial_schema.sql`
 2. `202606140002_row_level_security.sql`
 3. `202606140003_atomic_visitor_submission.sql`
+4. `202606140004_localize_jamaica.sql`
+5. `202606140005_localize_giving_currency.sql`
+6. `202606150001_media_storage.sql`
 
 The first migration creates the CMS, newcomer care, membership, attendance,
 giving, and church-settings tables. It also adds indexes and automatic
@@ -53,6 +56,21 @@ public-read, public-submission, and active-admin policies.
 
 The third migration adds the atomic public visitor-submission function used by
 the data-access layer. It prevents partially-created visitor records.
+
+The media-storage migration creates public `images`, `audio`, `videos`, and
+`documents` buckets. Only active admins can upload, update, or delete objects.
+Public bucket URLs can be displayed by the website.
+
+Bucket limits are intentionally conservative for the Supabase Free plan:
+
+- Images: 5 MB
+- Audio: 25 MB
+- Videos: 50 MB
+- PDF documents: 10 MB
+
+Supabase Free projects allow at most 50 MB per file and include a limited total
+storage allowance. Use YouTube or Vimeo links for full sermon videos, and use
+compressed images and audio whenever possible.
 
 To load safe development records after applying both migrations, run
 `supabase/seed.sql`. The seed file is idempotent and does not create admin
