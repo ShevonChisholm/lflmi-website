@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import {
   CalendarDays,
+  CalendarPlus,
   CheckCircle2,
   Clock,
   Heart,
@@ -11,6 +12,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { getGoogleCalendarUrl, getCalendarIcsUrl } from "@/lib/calendar";
 
 import {
   registerForEvent,
@@ -362,6 +364,23 @@ export function PublicActionDialog({
               <div className="grid gap-3 rounded-2xl bg-[#eef4fc] p-5 text-sm text-[#0d1b2e] sm:grid-cols-2">
                 <div className="flex items-center gap-2"><CalendarDays size={16} className="text-[#0E5AA7]" />{formatEventDate(event.startDate)}</div>
                 <div className="flex items-center gap-2"><MapPin size={16} className="text-[#0E5AA7]" />{event.location ?? "Location to be announced"}</div>
+              </div>
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                <a
+                  href={getGoogleCalendarUrl(event)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-border bg-[#f6fbff] px-5 py-3 text-sm font-bold text-[#0E5AA7] hover:border-[#0E5AA7] hover:bg-[#eef4fc] transition-colors"
+                >
+                  <CalendarPlus size={16} />Add to Google Calendar
+                </a>
+                <a
+                  href={getCalendarIcsUrl(event)}
+                  download={`${event.title.replace(/[^a-zA-Z0-9-_ ]/g, "") || "event"}.ics`}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-border bg-white px-5 py-3 text-sm font-bold text-foreground hover:border-[#0E5AA7] hover:text-[#0E5AA7] transition-colors"
+                >
+                  <CalendarPlus size={16} />Download .ics
+                </a>
               </div>
               <p className="leading-relaxed text-muted-foreground">{event.description}</p>
               {event.isRegistrationRequired && !event.id.startsWith("fallback-") ? (

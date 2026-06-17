@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertCircle, BookOpen, Search, Volume2 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -10,194 +10,289 @@ import {
   SelectValue,
 } from "@/app/components/ui/select";
 import { Label } from "@/app/components/ui/label";
-import { fetchBibleReader, type BibleReaderResult } from "@/lib/bible";
+import {
+  fetchBibleBooks,
+  fetchBibleChapters,
+  fetchBibleReader,
+  fetchBibleTranslations,
+  type BibleBookOption,
+  type BibleChapterOption,
+  type BibleReaderResult,
+  type BibleTranslationOption,
+} from "@/lib/bible";
 
-const translations = [
-  { value: "web-bible-eng-KJV", label: "KJV" },
-  { value: "web-bible-eng-ESV", label: "ESV" },
-  { value: "web-bible-eng-NIV", label: "NIV" },
-];
+const preferredBookName = "John";
+const preferredChapterNumber = "3";
 
-const books = [
-  "Genesis",
-  "Exodus",
-  "Leviticus",
-  "Numbers",
-  "Deuteronomy",
-  "Joshua",
-  "Judges",
-  "Ruth",
-  "1 Samuel",
-  "2 Samuel",
-  "1 Kings",
-  "2 Kings",
-  "1 Chronicles",
-  "2 Chronicles",
-  "Ezra",
-  "Nehemiah",
-  "Esther",
-  "Job",
-  "Psalms",
-  "Proverbs",
-  "Ecclesiastes",
-  "Song of Solomon",
-  "Isaiah",
-  "Jeremiah",
-  "Lamentations",
-  "Ezekiel",
-  "Daniel",
-  "Hosea",
-  "Joel",
-  "Amos",
-  "Obadiah",
-  "Jonah",
-  "Micah",
-  "Nahum",
-  "Habakkuk",
-  "Zephaniah",
-  "Haggai",
-  "Zechariah",
-  "Malachi",
-  "Matthew",
-  "Mark",
-  "Luke",
-  "John",
-  "Acts",
-  "Romans",
-  "1 Corinthians",
-  "2 Corinthians",
-  "Galatians",
-  "Ephesians",
-  "Philippians",
-  "Colossians",
-  "1 Thessalonians",
-  "2 Thessalonians",
-  "1 Timothy",
-  "2 Timothy",
-  "Titus",
-  "Philemon",
-  "Hebrews",
-  "James",
-  "1 Peter",
-  "2 Peter",
-  "1 John",
-  "2 John",
-  "3 John",
-  "Jude",
-  "Revelation",
-];
+const normalize = (value: string | undefined | null) =>
+  String(value ?? "")
+    .trim()
+    .toLowerCase();
 
-const bookChapterCounts: Record<string, number> = {
-  Genesis: 50,
-  Exodus: 40,
-  Leviticus: 27,
-  Numbers: 36,
-  Deuteronomy: 34,
-  Joshua: 24,
-  Judges: 21,
-  Ruth: 4,
-  "1 Samuel": 31,
-  "2 Samuel": 24,
-  "1 Kings": 22,
-  "2 Kings": 25,
-  "1 Chronicles": 29,
-  "2 Chronicles": 36,
-  Ezra: 10,
-  Nehemiah: 13,
-  Esther: 10,
-  Job: 42,
-  Psalms: 150,
-  Proverbs: 31,
-  Ecclesiastes: 12,
-  "Song of Solomon": 8,
-  Isaiah: 66,
-  Jeremiah: 52,
-  Lamentations: 5,
-  Ezekiel: 48,
-  Daniel: 12,
-  Hosea: 14,
-  Joel: 3,
-  Amos: 9,
-  Obadiah: 1,
-  Jonah: 4,
-  Micah: 7,
-  Nahum: 3,
-  Habakkuk: 3,
-  Zephaniah: 3,
-  Haggai: 2,
-  Zechariah: 14,
-  Malachi: 4,
-  Matthew: 28,
-  Mark: 16,
-  Luke: 24,
-  John: 21,
-  Acts: 28,
-  Romans: 16,
-  "1 Corinthians": 16,
-  "2 Corinthians": 13,
-  Galatians: 6,
-  Ephesians: 6,
-  Philippians: 4,
-  Colossians: 4,
-  "1 Thessalonians": 5,
-  "2 Thessalonians": 3,
-  "1 Timothy": 6,
-  "2 Timothy": 4,
-  Titus: 3,
-  Philemon: 1,
-  Hebrews: 13,
-  James: 5,
-  "1 Peter": 5,
-  "2 Peter": 3,
-  "1 John": 5,
-  "2 John": 1,
-  "3 John": 1,
-  Jude: 1,
-  Revelation: 22,
+const findPreferredBook = (books: BibleBookOption[]) => {
+  const preferred = normalize(preferredBookName);
+
+  return (
+    books.find((book) => normalize(book.name) === preferred) ??
+    books.find((book) => normalize(book.nameLong) === preferred) ??
+    books.find((book) => normalize(book.name).includes(preferred)) ??
+    books[0]
+  );
 };
 
-const defaultTranslation = translations[0].value;
-const defaultBook = "John";
-const defaultChapter = 3;
+const findPreferredChapter = (
+  chapters: BibleChapterOption[],
+  preferredNumber = "1",
+) => {
+  return (
+    chapters.find((chapter) => String(chapter.number) === preferredNumber) ??
+    chapters.find((chapter) =>
+      normalize(chapter.reference).endsWith(` ${preferredNumber}`),
+    ) ??
+    chapters[0]
+  );
+};
 
 export default function BibleReader() {
-  const [translation, setTranslation] = useState(defaultTranslation);
-  const [book, setBook] = useState(defaultBook);
-  const [chapter, setChapter] = useState(defaultChapter);
+  const [translations, setTranslations] = useState<BibleTranslationOption[]>(
+    [],
+  );
+  const [translation, setTranslation] = useState("");
+  const [translationsLoading, setTranslationsLoading] = useState(false);
+  const [translationError, setTranslationError] = useState<string | null>(null);
+
+  const [books, setBooks] = useState<BibleBookOption[]>([]);
+  const [bookId, setBookId] = useState("");
+  const [booksLoading, setBooksLoading] = useState(false);
+  const [booksError, setBooksError] = useState<string | null>(null);
+
+  const [chapters, setChapters] = useState<BibleChapterOption[]>([]);
+  const [chapterId, setChapterId] = useState("");
+  const [chaptersLoading, setChaptersLoading] = useState(false);
+  const [chaptersError, setChaptersError] = useState<string | null>(null);
+
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [readerError, setReaderError] = useState<string | null>(null);
   const [result, setResult] = useState<BibleReaderResult | null>(null);
 
-  const currentChapterOptions = useMemo(() => {
-    const maxChapters = bookChapterCounts[book] ?? 150;
-    return Array.from({ length: maxChapters }, (_, index) => index + 1);
-  }, [book]);
+  const selectedTranslation = useMemo(
+    () => translations.find((item) => item.id === translation) ?? null,
+    [translations, translation],
+  );
 
-  useEffect(() => {
-    const maxChapters = bookChapterCounts[book] ?? 150;
-    if (chapter > maxChapters) {
-      setChapter(maxChapters);
-    }
-  }, [book, chapter]);
+  const selectedBook = useMemo(
+    () => books.find((item) => item.id === bookId) ?? null,
+    [books, bookId],
+  );
+
+  const selectedChapter = useMemo(
+    () => chapters.find((item) => item.id === chapterId) ?? null,
+    [chapters, chapterId],
+  );
 
   const displayReference = useMemo(() => {
-    return `${book} ${chapter}`;
-  }, [book, chapter]);
+    return (
+      result?.reference ??
+      selectedChapter?.reference ??
+      selectedBook?.name ??
+      "Select a chapter"
+    );
+  }, [result?.reference, selectedBook?.name, selectedChapter?.reference]);
 
-  const loadBible = async () => {
-    setError(null);
+  const combinedSetupError =
+    translationError ?? booksError ?? chaptersError ?? null;
+
+  const translationsDisabled = translationsLoading || translations.length === 0;
+
+  const booksDisabled = !translation || booksLoading || books.length === 0;
+
+  const chaptersDisabled =
+    !translation || !bookId || chaptersLoading || chapters.length === 0;
+
+  const readerDisabled = !translation || !bookId || !chapterId || loading;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadTranslations = async () => {
+      setTranslationsLoading(true);
+      setTranslationError(null);
+      setTranslations([]);
+      setTranslation("");
+
+      try {
+        const options = await fetchBibleTranslations();
+
+        if (cancelled) return;
+
+        setTranslations(options);
+
+        if (options.length > 0) {
+          setTranslation(options[0].id);
+        } else {
+          setTranslationError("No Bible translations were returned.");
+        }
+      } catch (fetchError) {
+        if (cancelled) return;
+
+        setTranslationError(
+          fetchError instanceof Error
+            ? fetchError.message
+            : "Unable to load Bible translations.",
+        );
+      } finally {
+        if (!cancelled) {
+          setTranslationsLoading(false);
+        }
+      }
+    };
+
+    void loadTranslations();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadBooks = async () => {
+      if (!translation) {
+        setBooks([]);
+        setBookId("");
+        setChapters([]);
+        setChapterId("");
+        setResult(null);
+        return;
+      }
+
+      setBooksLoading(true);
+      setBooksError(null);
+      setBooks([]);
+      setBookId("");
+      setChapters([]);
+      setChapterId("");
+      setChaptersError(null);
+      setReaderError(null);
+      setResult(null);
+
+      try {
+        const options = await fetchBibleBooks(translation);
+
+        if (cancelled) return;
+
+        setBooks(options);
+
+        if (options.length > 0) {
+          const preferredBook = findPreferredBook(options);
+          setBookId(preferredBook.id);
+        } else {
+          setBooksError("No books were returned for this Bible translation.");
+        }
+      } catch (fetchError) {
+        if (cancelled) return;
+
+        setBooksError(
+          fetchError instanceof Error
+            ? fetchError.message
+            : "Unable to load Bible books.",
+        );
+      } finally {
+        if (!cancelled) {
+          setBooksLoading(false);
+        }
+      }
+    };
+
+    void loadBooks();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [translation]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadChapters = async () => {
+      if (!translation || !bookId) {
+        setChapters([]);
+        setChapterId("");
+        setResult(null);
+        return;
+      }
+
+      setChaptersLoading(true);
+      setChaptersError(null);
+      setChapters([]);
+      setChapterId("");
+      setReaderError(null);
+      setResult(null);
+
+      try {
+        const options = await fetchBibleChapters(translation, bookId);
+
+        if (cancelled) return;
+
+        setChapters(options);
+
+        if (options.length > 0) {
+          const isPreferredBook =
+            normalize(selectedBook?.name) === normalize(preferredBookName) ||
+            normalize(selectedBook?.nameLong) === normalize(preferredBookName);
+
+          const preferredChapter = findPreferredChapter(
+            options,
+            isPreferredBook ? preferredChapterNumber : "1",
+          );
+
+          setChapterId(preferredChapter.id);
+        } else {
+          setChaptersError("No chapters were returned for this book.");
+        }
+      } catch (fetchError) {
+        if (cancelled) return;
+
+        setChaptersError(
+          fetchError instanceof Error
+            ? fetchError.message
+            : "Unable to load Bible chapters.",
+        );
+      } finally {
+        if (!cancelled) {
+          setChaptersLoading(false);
+        }
+      }
+    };
+
+    void loadChapters();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [translation, bookId, selectedBook?.name, selectedBook?.nameLong]);
+
+  const loadBible = useCallback(async () => {
+    if (!translation || !chapterId) {
+      setResult(null);
+      return;
+    }
+
+    setReaderError(null);
     setLoading(true);
 
     try {
       const response = await fetchBibleReader({
         translation,
-        book,
-        chapter,
+        chapterId,
+        fallbackReference: selectedChapter?.reference,
       });
+
       setResult(response);
     } catch (fetchError) {
-      setError(
+      setReaderError(
         fetchError instanceof Error
           ? fetchError.message
           : "Unable to load Bible text.",
@@ -206,11 +301,31 @@ export default function BibleReader() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [translation, chapterId, selectedChapter?.reference]);
 
   useEffect(() => {
+    if (!translation || !chapterId) return;
+
     void loadBible();
-  }, [translation, book, chapter]);
+  }, [translation, chapterId, loadBible]);
+
+  const selectQuickBook = (bookName: string) => {
+    const target = normalize(bookName);
+
+    const matchingBook =
+      books.find((book) => normalize(book.name) === target) ??
+      books.find((book) => normalize(book.nameLong) === target) ??
+      books.find((book) => normalize(book.name).includes(target));
+
+    if (matchingBook) {
+      setBookId(matchingBook.id);
+    }
+  };
+
+  const matchingVerses =
+    result?.verses?.filter((verse) =>
+      verse.text.toLowerCase().includes(searchText.trim().toLowerCase()),
+    ) ?? [];
 
   return (
     <main className="min-h-screen bg-background text-foreground py-10 px-4 sm:px-6 lg:px-8">
@@ -218,53 +333,93 @@ export default function BibleReader() {
         <div className="mb-8 rounded-3xl border border-border bg-card p-8 shadow-sm">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#0E5AA7]">Bible Reader</p>
-              <h1 className="mt-3 text-4xl font-black tracking-tight text-foreground">Read Scripture with translation, chapter, and search controls.</h1>
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#0E5AA7]">
+                Bible Reader
+              </p>
+
+              <h1 className="mt-3 text-4xl font-black tracking-tight text-foreground">
+                Read Scripture with translation, chapter, and search controls.
+              </h1>
+
               <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Select a translation, book, and chapter to explore the Bible. Use the verse search field to highlight matching passages and navigate quickly.
+                Select a translation, book, and chapter to explore the Bible.
+                Books and chapters are loaded from the selected Bible version so
+                the reader uses the exact chapter IDs supported by API.Bible.
               </p>
             </div>
+
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
                 <Label htmlFor="translation">Translation</Label>
-                <Select value={translation} onValueChange={setTranslation}>
+                <Select
+                  value={translation}
+                  onValueChange={setTranslation}
+                  disabled={translationsDisabled}
+                >
                   <SelectTrigger id="translation">
-                    <SelectValue placeholder="Select translation" />
+                    <SelectValue
+                      placeholder={
+                        translationsLoading
+                          ? "Loading translations..."
+                          : "Select translation"
+                      }
+                    />
                   </SelectTrigger>
+
                   <SelectContent>
                     {translations.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
+                      <SelectItem key={option.id} value={option.id}>
                         {option.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div>
                 <Label htmlFor="book">Book</Label>
-                <Select value={book} onValueChange={setBook}>
+                <Select
+                  value={bookId}
+                  onValueChange={setBookId}
+                  disabled={booksDisabled}
+                >
                   <SelectTrigger id="book">
-                    <SelectValue placeholder="Select book" />
+                    <SelectValue
+                      placeholder={
+                        booksLoading ? "Loading books..." : "Select book"
+                      }
+                    />
                   </SelectTrigger>
+
                   <SelectContent>
-                    {books.map((name) => (
-                      <SelectItem key={name} value={name}>
-                        {name}
+                    {books.map((book) => (
+                      <SelectItem key={book.id} value={book.id}>
+                        {book.nameLong ?? book.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div>
                 <Label htmlFor="chapter">Chapter</Label>
-                <Select value={String(chapter)} onValueChange={(value) => setChapter(Number(value))}>
+                <Select
+                  value={chapterId}
+                  onValueChange={setChapterId}
+                  disabled={chaptersDisabled}
+                >
                   <SelectTrigger id="chapter">
-                    <SelectValue placeholder="Chapter" />
+                    <SelectValue
+                      placeholder={
+                        chaptersLoading ? "Loading chapters..." : "Chapter"
+                      }
+                    />
                   </SelectTrigger>
+
                   <SelectContent>
-                    {currentChapterOptions.map((value) => (
-                      <SelectItem key={value} value={String(value)}>
-                        {value}
+                    {chapters.map((chapter) => (
+                      <SelectItem key={chapter.id} value={chapter.id}>
+                        {chapter.number || chapter.reference}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -287,8 +442,14 @@ export default function BibleReader() {
                 <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               </div>
             </div>
-            <Button onClick={loadBible} className="self-stretch lg:self-end" variant="secondary">
-              Refresh
+
+            <Button
+              onClick={loadBible}
+              className="self-stretch lg:self-end"
+              variant="secondary"
+              disabled={readerDisabled}
+            >
+              {loading ? "Loading..." : "Refresh"}
             </Button>
           </div>
         </div>
@@ -298,46 +459,87 @@ export default function BibleReader() {
             <div className="flex items-center gap-3 mb-6">
               <BookOpen className="size-5 text-[#0E5AA7]" />
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Now reading</p>
-                <h2 className="text-xl font-black text-foreground">{displayReference}</h2>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  Now reading
+                </p>
+                <h2 className="text-xl font-black text-foreground">
+                  {displayReference}
+                </h2>
+                {selectedTranslation ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {selectedTranslation.label}
+                  </p>
+                ) : null}
               </div>
             </div>
 
-            {error ? (
+            {combinedSetupError ? (
+              <div className="mb-6 rounded-2xl border border-destructive/20 bg-destructive/10 p-5 text-sm text-destructive">
+                <div className="flex items-start gap-2">
+                  <AlertCircle size={18} />
+                  <div>{combinedSetupError}</div>
+                </div>
+              </div>
+            ) : null}
+
+            {readerError ? (
               <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 text-sm text-destructive">
                 <div className="flex items-start gap-2">
                   <AlertCircle size={18} />
-                  <div>{error}</div>
+                  <div>{readerError}</div>
                 </div>
               </div>
-            ) : loading ? (
-              <div className="rounded-3xl border border-border bg-[#f8fafc] p-10 text-center text-sm text-muted-foreground">Loading scripture…</div>
+            ) : loading ||
+              translationsLoading ||
+              booksLoading ||
+              chaptersLoading ? (
+              <div className="rounded-3xl border border-border bg-[#f8fafc] p-10 text-center text-sm text-muted-foreground">
+                Loading scripture…
+              </div>
             ) : result ? (
               <article className="space-y-6" aria-live="polite">
-                <div className="rounded-3xl border border-border bg-background p-5 text-sm leading-7 text-foreground" dangerouslySetInnerHTML={{ __html: result.html }} />
+                <div className="rounded-3xl border border-border bg-background p-6 sm:p-8 shadow-sm">
+                  <div
+                    className="scripture-styles bible-scripture-content"
+                    dangerouslySetInnerHTML={{ __html: result.html }}
+                  />
+                </div>
 
-                {result?.verses && searchText.trim().length > 0 ? (
+                {result.copyright ? (
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    {result.copyright}
+                  </p>
+                ) : null}
+
+                {result.verses?.length && searchText.trim().length > 0 ? (
                   <div className="rounded-3xl border border-border bg-[#f8fafc] p-5">
-                    <h3 className="text-sm font-semibold text-foreground mb-3">Matches</h3>
-                    <ul className="space-y-3 text-sm text-muted-foreground">
-                      {result.verses
-                        .filter((verse) =>
-                          verse.text
-                            .toLowerCase()
-                            .includes(searchText.toLowerCase()),
-                        )
-                        .map((verse) => (
+                    <h3 className="text-sm font-semibold text-foreground mb-3">
+                      Matches
+                    </h3>
+
+                    {matchingVerses.length > 0 ? (
+                      <ul className="space-y-3 text-sm text-muted-foreground">
+                        {matchingVerses.map((verse) => (
                           <li key={verse.verse}>
-                            <span className="font-semibold text-foreground">{result.reference}:{verse.verse}</span>
+                            <span className="font-semibold text-foreground">
+                              {result.reference}:{verse.verse}
+                            </span>
                             <p>{verse.text}</p>
                           </li>
                         ))}
-                    </ul>
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No verse matches found.
+                      </p>
+                    )}
                   </div>
                 ) : null}
               </article>
             ) : (
-              <div className="rounded-3xl border border-border bg-[#f8fafc] p-10 text-center text-sm text-muted-foreground">Select a book and chapter to begin reading.</div>
+              <div className="rounded-3xl border border-border bg-[#f8fafc] p-10 text-center text-sm text-muted-foreground">
+                Select a translation, book, and chapter to begin reading.
+              </div>
             )}
           </section>
 
@@ -346,21 +548,51 @@ export default function BibleReader() {
               <div className="flex items-center gap-3 mb-4">
                 <Volume2 className="size-5 text-[#0E5AA7]" />
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Reading preferences</p>
-                  <h3 className="text-lg font-black text-foreground">Adjust your view</h3>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                    Reading preferences
+                  </p>
+                  <h3 className="text-lg font-black text-foreground">
+                    Adjust your view
+                  </h3>
                 </div>
               </div>
+
               <p className="text-sm leading-6 text-muted-foreground">
-                This reader currently supports translation, book, chapter selection, and verse search. Audio support can be added later by wiring an audio Bible source.
+                This reader loads translations, books, and chapters from
+                API.Bible through Supabase Edge Functions. Audio support can be
+                added later by wiring an audio Bible source.
               </p>
             </div>
 
             <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-              <div className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Quick navigation</div>
+              <div className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Quick navigation
+              </div>
+
               <div className="grid gap-3">
-                <Button variant="outline" onClick={() => setBook("John")}>John</Button>
-                <Button variant="outline" onClick={() => setBook("Psalms")}>Psalms</Button>
-                <Button variant="outline" onClick={() => setBook("Romans")}>Romans</Button>
+                <Button
+                  variant="outline"
+                  onClick={() => selectQuickBook("John")}
+                  disabled={booksDisabled}
+                >
+                  John
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => selectQuickBook("Psalms")}
+                  disabled={booksDisabled}
+                >
+                  Psalms
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => selectQuickBook("Romans")}
+                  disabled={booksDisabled}
+                >
+                  Romans
+                </Button>
               </div>
             </div>
           </aside>

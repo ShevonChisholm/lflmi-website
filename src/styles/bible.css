@@ -1,0 +1,48 @@
+.bible-scripture-content {
+  --ss-color-background: transparent;
+  --ss-color-text: hsl(var(--foreground));
+  --ss-color-text-intense: hsl(var(--foreground));
+  --ss-color-text-muted: hsl(var(--muted-foreground));
+  --ss-color-ui: hsl(var(--border));
+  --ss-font-serif: Georgia, "Times New Roman", serif;
+  --ss-font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --ss-rem: 1.05rem;
+
+  max-width: 72ch;
+  margin-inline: auto;
+}
+
+.bible-scripture-content .s,
+.bible-scripture-content .s1,
+.bible-scripture-content .s2,
+.bible-scripture-content .s3 {
+  color: #0e5aa7;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 800;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.bible-scripture-content .v,
+.bible-scripture-content sup[class^="v"] {
+  color: #0e5aa7;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 0.7em;
+  font-weight: 800;
+  margin-right: 0.15rem;
+}
+
+.bible-scripture-content p {
+  margin-bottom: 0.85rem;
+}
+
+.bible-scripture-content [class^="q"] {
+  color: hsl(var(--foreground));
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.bible-scripture-content .wj {
+  color: #d7261e;
+}

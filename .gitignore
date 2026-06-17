@@ -44,3 +44,5 @@ desktop.ini
 # Ignore lock files not used by this repo
 package-lock.json
 yarn.lock
+
+supabase/.temp/
