@@ -15,6 +15,7 @@ import Ministries from "./pages/admin/Ministries";
 import About from "./pages/admin/About";
 import ContactMessages from "./pages/admin/ContactMessages";
 import ContentPages from "./pages/admin/ContentPages";
+import Admins from "./pages/admin/Admins";
 
 export const router = createBrowserRouter([
   { path: "/", Component: Home },
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
       { path: "about", Component: About },
       { path: "contact-messages", Component: ContactMessages },
       { path: "content-pages", Component: ContentPages },
+      { path: "admins", Component: Admins },
     ],
   },
 ]);

@@ -37,6 +37,28 @@ The browser-safe Supabase client is exported from
 `src/lib/supabase/client.ts`. It validates the required public environment
 variables when imported.
 
+### Admin Management
+
+Administrator management is available at `/admin/admins` for super admins and
+admins with the `MANAGE_ADMINS` permission. The portal can update admin
+profiles directly through Supabase RLS, but creating a new Supabase Auth login
+must happen through a trusted Edge Function.
+
+Set the browser-safe function URL in `.env`:
+
+```env
+VITE_ADMIN_CREATE_USER_API_URL=https://your-project.supabase.co/functions/v1/admin-create-user
+```
+
+Deploy `supabase/functions/admin-create-user` and set these Supabase secrets:
+
+```bash
+supabase secrets set SUPABASE_URL=https://your-project.supabase.co
+supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+Never place the service-role key in `.env` or any `VITE_` variable.
+
 ### Bible Reader
 
 A Bible reader page is available at `/bible`.
@@ -79,6 +101,7 @@ SQL editor or CLI:
 4. `202606140004_localize_jamaica.sql`
 5. `202606140005_localize_giving_currency.sql`
 6. `202606150001_media_storage.sql`
+7. `202606190001_admin_permission_policies.sql`
 
 The first migration creates the CMS, newcomer care, membership, attendance,
 giving, and church-settings tables. It also adds indexes and automatic
@@ -91,6 +114,10 @@ the data-access layer. It prevents partially-created visitor records.
 The media-storage migration creates public `images`, `audio`, `videos`, and
 `documents` buckets. Only active admins can upload, update, or delete objects.
 Public bucket URLs can be displayed by the website.
+
+The admin-permission migration adds `has_admin_permission`, keeps active-admin
+read access, and gates write access by permission group such as `MANAGE_CMS`,
+`MANAGE_CARE`, `MANAGE_MEMBERS`, `MANAGE_GIVING`, and `MANAGE_ADMINS`.
 
 Bucket limits are intentionally conservative for the Supabase Free plan:
 
@@ -113,12 +140,13 @@ Create the first user through Supabase Authentication, then run this statement
 from the trusted Supabase SQL editor using that user's ID:
 
 ```sql
-insert into public.admin_profiles (id, full_name, email, role)
+insert into public.admin_profiles (id, full_name, email, role, permissions)
 values (
   'AUTH_USER_ID',
   'Admin Name',
   'admin@example.com',
-  'SUPER_ADMIN'
+  'SUPER_ADMIN',
+  array['MANAGE_ADMINS', 'MANAGE_CMS', 'MANAGE_CARE', 'MANAGE_MEMBERS', 'MANAGE_GIVING', 'VIEW_DASHBOARD']
 );
 ```
 

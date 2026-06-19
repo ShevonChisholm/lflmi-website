@@ -15,7 +15,8 @@ const getOptionalPublicEnv = (
     | "VITE_BIBLE_READER_API_URL"
     | "VITE_BIBLE_BIBLES_API_URL"
     | "VITE_BIBLE_BOOKS_API_URL"
-    | "VITE_BIBLE_CHAPTERS_API_URL",
+    | "VITE_BIBLE_CHAPTERS_API_URL"
+    | "VITE_ADMIN_CREATE_USER_API_URL",
 ): string | undefined => import.meta.env[key]?.trim();
 
 export const publicEnv = {
@@ -25,4 +26,5 @@ export const publicEnv = {
   bibleBiblesApiUrl: getOptionalPublicEnv("VITE_BIBLE_BIBLES_API_URL"),
   bibleBooksApiUrl: getOptionalPublicEnv("VITE_BIBLE_BOOKS_API_URL"),
   bibleChaptersApiUrl: getOptionalPublicEnv("VITE_BIBLE_CHAPTERS_API_URL"),
+  adminCreateUserApiUrl: getOptionalPublicEnv("VITE_ADMIN_CREATE_USER_API_URL"),
 } as const;

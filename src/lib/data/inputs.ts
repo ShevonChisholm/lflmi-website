@@ -1,4 +1,6 @@
 import type {
+  AdminPermission,
+  AdminRole,
   ContactMessageStatus,
   EventStatus,
   EventRegistrationStatus,
@@ -16,6 +18,21 @@ import type {
   RecordStatus,
   UUID,
 } from "@/types";
+
+export interface AdminProfileInput {
+  fullName?: string | null;
+  email?: string | null;
+  role: AdminRole;
+  permissions?: AdminPermission[];
+  isActive?: boolean;
+}
+
+export interface AdminProfileCreateInput extends AdminProfileInput {
+  email: string;
+  password: string;
+}
+
+export type AdminProfileUpdateInput = Partial<AdminProfileInput>;
 
 export interface ContactMessageInput {
   name: string;

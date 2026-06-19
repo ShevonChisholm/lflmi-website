@@ -1,4 +1,5 @@
 import type {
+  AdminProfile,
   ContactMessage,
   ContentPage,
   Event,
@@ -36,6 +37,19 @@ export const mapSermon = (row: TableRow<"sermons">): Sermon => ({
   durationMinutes: row.duration_minutes,
   viewCount: row.view_count,
   publicationStatus: row.publication_status as Sermon["publicationStatus"],
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapAdminProfile = (
+  row: TableRow<"admin_profiles">,
+): AdminProfile => ({
+  id: row.id,
+  fullName: row.full_name,
+  email: row.email,
+  role: row.role as AdminProfile["role"],
+  permissions: row.permissions as AdminProfile["permissions"],
+  isActive: row.is_active,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });

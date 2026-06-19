@@ -5,6 +5,30 @@ type Nullable<T> = T | null;
 export interface Database {
   public: {
     Tables: {
+      admin_profiles: {
+        Row: {
+          id: string;
+          full_name: Nullable<string>;
+          email: Nullable<string>;
+          role: string;
+          permissions: string[];
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          full_name?: Nullable<string>;
+          email?: Nullable<string>;
+          role?: string;
+          permissions?: string[];
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["admin_profiles"]["Insert"]>;
+        Relationships: [];
+      };
       contact_messages: {
         Row: {
           id: string;

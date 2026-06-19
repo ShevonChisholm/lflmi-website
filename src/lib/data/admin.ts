@@ -1,4 +1,5 @@
 import type {
+  AdminProfile,
   ContentPage,
   ContactMessage,
   ChurchSettings,
@@ -20,12 +21,15 @@ import type {
 } from "@/types";
 
 import { supabase } from "../supabase/client";
+import { publicEnv } from "../env";
 import type {
   TableInsert,
   TableUpdate,
 } from "../supabase/database.types";
 import { requireData, throwIfDataError } from "./errors";
 import type {
+  AdminProfileCreateInput,
+  AdminProfileUpdateInput,
   ContentPageInput,
   ContentPageUpdateInput,
   ContactMessageUpdateInput,
@@ -55,6 +59,7 @@ import type {
   ServiceTimeUpdateInput,
 } from "./inputs";
 import {
+  mapAdminProfile,
   mapContentPage,
   mapContactMessage,
   mapChurchSettings,
@@ -77,6 +82,16 @@ import {
 export interface AdminListOptions {
   limit?: number;
 }
+
+const mapAdminProfileUpdate = (
+  input: AdminProfileUpdateInput,
+): TableUpdate<"admin_profiles"> => ({
+  full_name: input.fullName,
+  email: input.email,
+  role: input.role,
+  permissions: input.permissions,
+  is_active: input.isActive,
+});
 
 const mapContactMessageUpdate = (
   input: ContactMessageUpdateInput,
@@ -270,6 +285,96 @@ const mapContentPageUpdate = (
   seo_description: input.seoDescription,
   publication_status: input.publicationStatus,
 });
+
+export const getCurrentAdminProfile =
+  async (): Promise<AdminProfile | null> => {
+    const { data: sessionData, error: sessionError } =
+      await supabase.auth.getSession();
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const userId = sessionData.session?.user.id;
+
+    if (!userId) return null;
+
+    const { data, error } = await supabase
+      .from("admin_profiles")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
+
+    throwIfDataError(error, "Unable to load your admin profile.");
+    return data ? mapAdminProfile(data) : null;
+  };
+
+export const getAdminProfiles = async (): Promise<AdminProfile[]> => {
+  const { data, error } = await supabase
+    .from("admin_profiles")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  throwIfDataError(error, "Unable to load administrator profiles.");
+  return (data ?? []).map(mapAdminProfile);
+};
+
+export const createAdminProfile = async (
+  input: AdminProfileCreateInput,
+): Promise<AdminProfile> => {
+  const apiUrl = publicEnv.adminCreateUserApiUrl;
+
+  if (!apiUrl) {
+    throw new Error(
+      "Admin creation is not configured. Please provide VITE_ADMIN_CREATE_USER_API_URL.",
+    );
+  }
+
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+
+  if (!token) {
+    throw new Error("You must be signed in to create administrators.");
+  }
+
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(input),
+  });
+
+  const body = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(
+      body?.error ??
+        `Unable to create administrator (${response.status}).`,
+    );
+  }
+
+  return mapAdminProfile(
+    requireData(body?.data, null, "Admin creation did not return a profile."),
+  );
+};
+
+export const updateAdminProfile = async (
+  id: UUID,
+  input: AdminProfileUpdateInput,
+): Promise<AdminProfile> => {
+  const { data, error } = await supabase
+    .from("admin_profiles")
+    .update(mapAdminProfileUpdate(input))
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  return mapAdminProfile(
+    requireData(data, error, "Unable to update administrator profile."),
+  );
+};
 
 export const getPeople = async (
   options: AdminListOptions = {},

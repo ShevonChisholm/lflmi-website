@@ -4,25 +4,34 @@ import {
   LayoutDashboard, UserCheck, Heart, Mic2, Calendar,
   CalendarCheck, Users, HandCoins, Globe, Info,
   Settings, LogOut, Menu, Bell, Search, ChevronRight, MessagesSquare, Files,
+  ShieldCheck, Loader2, Lock,
 } from "lucide-react";
 import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
 import logoImg from "@/imports/PHOTO-2025-11-20-06-26-28-removebg-preview.png";
 import { supabase } from "@/lib/supabase/client";
-import { getContactMessages } from "@/lib/data";
+import { getContactMessages, getCurrentAdminProfile } from "@/lib/data";
+import {
+  adminRoleLabels,
+  canAccessAdminPath,
+  hasAdminPermission,
+  initialsForAdmin,
+} from "@/lib/admin-permissions";
+import type { AdminPermission, AdminProfile } from "@/types";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
-  { icon: UserCheck, label: "Visitors", path: "/admin/visitors" },
-  { icon: Heart, label: "Prayer Requests", path: "/admin/prayer-requests" },
-  { icon: MessagesSquare, label: "Contact Inbox", path: "/admin/contact-messages" },
-  { icon: Mic2, label: "Sermons", path: "/admin/sermons" },
-  { icon: Calendar, label: "Events", path: "/admin/events" },
-  { icon: CalendarCheck, label: "Planned Visits", path: "/admin/planned-visits" },
-  { icon: Users, label: "Members", path: "/admin/members" },
-  { icon: HandCoins, label: "Give Programs", path: "/admin/give" },
-  { icon: Globe, label: "Ministries", path: "/admin/ministries" },
-  { icon: Files, label: "Content Pages", path: "/admin/content-pages" },
-  { icon: Info, label: "About", path: "/admin/about" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard", permission: "VIEW_DASHBOARD" },
+  { icon: UserCheck, label: "Visitors", path: "/admin/visitors", permission: "MANAGE_CARE" },
+  { icon: Heart, label: "Prayer Requests", path: "/admin/prayer-requests", permission: "MANAGE_CARE" },
+  { icon: MessagesSquare, label: "Contact Inbox", path: "/admin/contact-messages", permission: "MANAGE_CARE" },
+  { icon: Mic2, label: "Sermons", path: "/admin/sermons", permission: "MANAGE_CMS" },
+  { icon: Calendar, label: "Events", path: "/admin/events", permission: "MANAGE_CMS" },
+  { icon: CalendarCheck, label: "Planned Visits", path: "/admin/planned-visits", permission: "MANAGE_CARE" },
+  { icon: Users, label: "Members", path: "/admin/members", permission: "MANAGE_MEMBERS" },
+  { icon: HandCoins, label: "Give Programs", path: "/admin/give", permission: "MANAGE_GIVING" },
+  { icon: Globe, label: "Ministries", path: "/admin/ministries", permission: "MANAGE_CMS" },
+  { icon: Files, label: "Content Pages", path: "/admin/content-pages", permission: "MANAGE_CMS" },
+  { icon: Info, label: "About", path: "/admin/about", permission: "MANAGE_CMS" },
+  { icon: ShieldCheck, label: "Administrators", path: "/admin/admins", permission: "MANAGE_ADMINS" },
 ];
 
 const pageTitles: Record<string, string> = {
@@ -30,6 +39,7 @@ const pageTitles: Record<string, string> = {
   "/admin/visitors": "Visitors",
   "/admin/prayer-requests": "Prayer Requests",
   "/admin/contact-messages": "Contact Inbox",
+  "/admin/admins": "Administrators",
   "/admin/sermons": "Sermons",
   "/admin/events": "Events",
   "/admin/planned-visits": "Planned Visits",
@@ -45,13 +55,45 @@ export default function AdminLayout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState(0);
+  const [currentAdmin, setCurrentAdmin] = useState<AdminProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   useEffect(() => {
-    void supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) navigate("/admin/login");
-    });
+    const loadAdminProfile = async () => {
+      setProfileLoading(true);
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        navigate("/admin/login");
+        return;
+      }
+
+      try {
+        const profile = await getCurrentAdminProfile();
+
+        if (!profile?.isActive) {
+          await supabase.auth.signOut();
+          navigate("/admin/login");
+          return;
+        }
+
+        setCurrentAdmin(profile);
+      } catch {
+        setCurrentAdmin(null);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    void loadAdminProfile();
+
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) navigate("/admin/login");
+      if (!session) {
+        setCurrentAdmin(null);
+        navigate("/admin/login");
+        return;
+      }
+
+      void loadAdminProfile();
     });
     return () => data.subscription.unsubscribe();
   }, [navigate]);
@@ -61,6 +103,11 @@ export default function AdminLayout() {
   }, [location.pathname]);
 
   useEffect(() => {
+    if (!hasAdminPermission(currentAdmin, "MANAGE_CARE")) {
+      setNotifications(0);
+      return;
+    }
+
     const refreshNotifications = async () => {
       try {
         const messages = await getContactMessages();
@@ -90,7 +137,7 @@ export default function AdminLayout() {
       window.clearInterval(refreshInterval);
       void supabase.removeChannel(channel);
     };
-  }, []);
+  }, [currentAdmin]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -98,10 +145,17 @@ export default function AdminLayout() {
   };
 
   const pageTitle = pageTitles[location.pathname] ?? "Admin";
+  const availableNavItems = navItems.filter((item) =>
+    hasAdminPermission(currentAdmin, item.permission as AdminPermission),
+  );
+  const canAccessCurrentPage =
+    !profileLoading && canAccessAdminPath(currentAdmin, location.pathname);
+  const adminInitials = initialsForAdmin(currentAdmin);
+
   const handleAdminSearch = (query: string) => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return;
-    const match = navItems.find((item) =>
+    const match = availableNavItems.find((item) =>
       item.label.toLowerCase().includes(normalized),
     );
     if (match) navigate(match.path);
@@ -133,7 +187,7 @@ export default function AdminLayout() {
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           <div className="text-[9px] font-black text-[#6b7897]/60 tracking-widest uppercase px-3 mb-2">Main Menu</div>
           <ul className="space-y-0.5">
-            {navItems.map((item) => (
+            {availableNavItems.map((item) => (
               <li key={item.path}>
                 <NavLink
                   to={item.path}
@@ -160,17 +214,19 @@ export default function AdminLayout() {
 
         {/* Bottom */}
         <div className="border-t border-[#e8eef6] p-3 shrink-0 space-y-0.5">
-          <button onClick={() => navigate("/admin/about")} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#6b7897] hover:bg-[#f0f4f9] hover:text-[#0d1b2e] transition-all w-full group">
-            <Settings size={18} />Settings
-          </button>
+          {hasAdminPermission(currentAdmin, "MANAGE_CMS") && (
+            <button onClick={() => navigate("/admin/about")} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#6b7897] hover:bg-[#f0f4f9] hover:text-[#0d1b2e] transition-all w-full group">
+              <Settings size={18} />Settings
+            </button>
+          )}
           <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#D7261E]/70 hover:bg-[#D7261E]/8 hover:text-[#D7261E] transition-all w-full">
             <LogOut size={18} />Sign Out
           </button>
           <div className="flex items-center gap-3 px-3 pt-3 mt-2 border-t border-[#e8eef6]">
-            <div className="w-8 h-8 rounded-full bg-[#0E5AA7] flex items-center justify-center text-white text-xs font-black shrink-0">AD</div>
+            <div className="w-8 h-8 rounded-full bg-[#0E5AA7] flex items-center justify-center text-white text-xs font-black shrink-0">{adminInitials}</div>
             <div className="min-w-0">
-              <div className="text-xs font-bold text-[#0d1b2e] truncate">Administrator</div>
-              <div className="text-[10px] text-[#6b7897] truncate">LFLMI Admin</div>
+              <div className="text-xs font-bold text-[#0d1b2e] truncate">{currentAdmin?.fullName ?? currentAdmin?.email ?? "Administrator"}</div>
+              <div className="text-[10px] text-[#6b7897] truncate">{currentAdmin ? adminRoleLabels[currentAdmin.role] : "LFLMI Admin"}</div>
             </div>
           </div>
         </div>
@@ -215,21 +271,48 @@ export default function AdminLayout() {
               View Site
             </a>
             {/* Notifications */}
-            <button onClick={() => navigate("/admin/contact-messages")} aria-label="View unread contact messages" className="relative p-2 rounded-xl text-[#6b7897] hover:bg-[#f0f4f9] hover:text-[#0d1b2e] transition-colors">
-              <Bell size={18} />
-              {notifications > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-[#D7261E] text-white text-[9px] font-black rounded-full flex items-center justify-center">{notifications}</span>
-              )}
-            </button>
+            {hasAdminPermission(currentAdmin, "MANAGE_CARE") && (
+              <button onClick={() => navigate("/admin/contact-messages")} aria-label="View unread contact messages" className="relative p-2 rounded-xl text-[#6b7897] hover:bg-[#f0f4f9] hover:text-[#0d1b2e] transition-colors">
+                <Bell size={18} />
+                {notifications > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-[#D7261E] text-white text-[9px] font-black rounded-full flex items-center justify-center">{notifications}</span>
+                )}
+              </button>
+            )}
             {/* Avatar */}
-            <button onClick={() => navigate("/admin/about")} aria-label="Open settings" className="w-8 h-8 rounded-full bg-[#0E5AA7] flex items-center justify-center text-white text-xs font-black cursor-pointer">AD</button>
+            <button onClick={() => navigate(hasAdminPermission(currentAdmin, "MANAGE_ADMINS") ? "/admin/admins" : "/admin/dashboard")} aria-label="Open admin profile" className="w-8 h-8 rounded-full bg-[#0E5AA7] flex items-center justify-center text-white text-xs font-black cursor-pointer">{adminInitials}</button>
           </div>
         </header>
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto">
-          <Outlet />
+          {profileLoading ? (
+            <div className="flex min-h-full items-center justify-center">
+              <Loader2 className="animate-spin text-[#0E5AA7]" />
+            </div>
+          ) : canAccessCurrentPage ? (
+            <Outlet />
+          ) : (
+            <AccessDenied />
+          )}
         </main>
+      </div>
+    </div>
+  );
+}
+
+function AccessDenied() {
+  return (
+    <div className="flex min-h-full items-center justify-center p-8">
+      <div className="max-w-md rounded-3xl bg-white p-8 text-center shadow-sm">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-[#D7261E]">
+          <Lock size={24} />
+        </div>
+        <h2 className="text-xl font-black text-[#0d1b2e]">Access denied</h2>
+        <p className="mt-2 text-sm leading-6 text-[#6b7897]">
+          Your administrator role does not have permission to open this section.
+          Ask a super admin to update your permissions if this looks wrong.
+        </p>
       </div>
     </div>
   );

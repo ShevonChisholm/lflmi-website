@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly VITE_BIBLE_BOOKS_API_URL?: string;
   readonly VITE_BIBLE_CHAPTERS_API_URL?: string;
   readonly VITE_BIBLE_READER_API_URL?: string;
+  readonly VITE_ADMIN_CREATE_USER_API_URL?: string;
 }
 
 interface ImportMeta {
