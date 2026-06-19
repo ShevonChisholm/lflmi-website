@@ -156,16 +156,16 @@ export function AdminCmsDialog({
   const title = `${value ? "Edit" : "Create"} ${itemLabel}`;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-[#04183a]/60 p-0 backdrop-blur-sm sm:items-center sm:p-6" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="max-h-[94vh] w-full max-w-3xl overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl">
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-[#e8eef6] bg-white/95 px-6 py-5 backdrop-blur">
-          <div>
+    <div className="fixed inset-0 z-[100] flex items-end justify-center overflow-y-auto bg-[#04183a]/60 p-0 backdrop-blur-sm sm:items-center sm:p-6" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section className="max-h-[100dvh] w-full max-w-3xl overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:max-h-[94vh] sm:rounded-3xl">
+        <header className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[#e8eef6] bg-white/95 px-4 py-4 backdrop-blur sm:px-6 sm:py-5">
+          <div className="min-w-0">
             <div className="text-[10px] font-black uppercase tracking-widest text-[#0E5AA7]">Admin CMS</div>
-            <h2 className="text-xl font-black text-[#0d1b2e]">{title}</h2>
+            <h2 className="text-lg font-black leading-tight text-[#0d1b2e] sm:text-xl">{title}</h2>
           </div>
-          <button type="button" onClick={onClose} className="rounded-xl bg-[#f0f4f9] p-2.5 text-[#6b7897]"><X size={17} /></button>
+          <button type="button" onClick={onClose} className="shrink-0 rounded-xl bg-[#f0f4f9] p-2.5 text-[#6b7897]"><X size={17} /></button>
         </header>
-        <form onSubmit={submit} className="space-y-5 p-6">
+        <form onSubmit={submit} className="space-y-5 p-4 sm:p-6">
           {kind === "sermon" && (() => {
             const sermon = value as Sermon | null;
             return <>
@@ -255,9 +255,9 @@ export function AdminCmsDialog({
             </>;
           })()}
           {error && <div className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-          <div className="flex justify-end gap-3 border-t border-[#e8eef6] pt-5">
+          <div className="flex flex-col-reverse gap-3 border-t border-[#e8eef6] pt-5 sm:flex-row sm:justify-end">
             <button type="button" onClick={onClose} className="rounded-xl bg-[#f0f4f9] px-5 py-2.5 text-sm font-bold text-[#6b7897]">Cancel</button>
-            <button type="submit" disabled={saving} className="flex items-center gap-2 rounded-xl bg-[#0E5AA7] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving && <Loader2 size={15} className="animate-spin" />}Save</button>
+            <button type="submit" disabled={saving} className="flex items-center justify-center gap-2 rounded-xl bg-[#0E5AA7] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving && <Loader2 size={15} className="animate-spin" />}Save</button>
           </div>
         </form>
       </section>

@@ -130,6 +130,36 @@
     @apply bg-background text-foreground;
   }
 
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  *,
+  *::before,
+  *::after {
+    min-width: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  a,
+  button,
+  label,
+  input,
+  textarea,
+  select,
+  td,
+  th {
+    overflow-wrap: anywhere;
+  }
+
   /**
   * Default typography styles for HTML elements (h1-h4, p, label, button, input).
   * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
@@ -179,5 +209,73 @@
     font-size: var(--text-base);
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
+  }
+}
+
+@layer components {
+  @media (max-width: 767px) {
+    .responsive-admin-table {
+      overflow-x: visible;
+    }
+
+    .responsive-admin-table table,
+    .responsive-admin-table thead,
+    .responsive-admin-table tbody,
+    .responsive-admin-table tr,
+    .responsive-admin-table td {
+      display: block;
+      width: 100%;
+    }
+
+    .responsive-admin-table table {
+      min-width: 0;
+    }
+
+    .responsive-admin-table thead {
+      display: none;
+    }
+
+    .responsive-admin-table tbody {
+      display: grid;
+      gap: 0.75rem;
+      padding: 0.75rem;
+    }
+
+    .responsive-admin-table tr {
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      background: var(--card);
+      overflow: hidden;
+    }
+
+    .responsive-admin-table td {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      text-align: right;
+      white-space: normal;
+    }
+
+    .responsive-admin-table td::before {
+      content: attr(data-label);
+      flex: 0 0 auto;
+      max-width: 45%;
+      text-align: left;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted-foreground);
+    }
+
+    .responsive-admin-table td[data-actions="true"] {
+      justify-content: flex-end;
+    }
+
+    .responsive-admin-table td[data-actions="true"]::before {
+      display: none;
+    }
   }
 }

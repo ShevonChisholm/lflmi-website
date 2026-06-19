@@ -157,8 +157,8 @@ export default function Attendance() {
   };
 
   return (
-    <div className="p-5 lg:p-7">
-      <div className="mb-6 flex items-start justify-between gap-4">
+    <div className="p-4 lg:p-7">
+      <div className="mb-6 flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-start">
         <div>
           <h1 className="text-2xl font-black text-[#0d1b2e]">Attendance</h1>
           <p className="mt-1 text-sm text-[#6b7897]">
@@ -169,7 +169,7 @@ export default function Attendance() {
         <button
           type="button"
           onClick={() => setEditing(null)}
-          className="flex items-center gap-2 rounded-xl bg-[#0E5AA7] px-4 py-2.5 text-sm font-bold text-white"
+          className="flex items-center justify-center gap-2 rounded-xl bg-[#0E5AA7] px-4 py-2.5 text-sm font-bold text-white sm:w-auto"
         >
           <Plus size={16} />
           Add Record
@@ -184,7 +184,7 @@ export default function Attendance() {
       </div>
 
       <div className="mb-5 flex flex-wrap gap-3">
-        <div className="relative min-w-52 flex-1">
+        <div className="relative min-w-0 flex-1">
           <Search
             size={14}
             className="absolute left-3 top-3 text-[#6b7897]"
@@ -210,8 +210,8 @@ export default function Attendance() {
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px]">
+          <div className="responsive-admin-table overflow-x-auto">
+            <table className="w-full md:min-w-[760px]">
               <thead className="border-b border-[#e8eef6] bg-[#f8fafc] text-left text-xs font-black uppercase tracking-wide text-[#6b7897]">
                 <tr>
                   <th className="p-4">Service</th>
@@ -225,9 +225,9 @@ export default function Attendance() {
               <tbody className="divide-y divide-[#e8eef6]">
                 {filtered.map((item) => (
                   <tr key={item.id}>
-                    <td className="p-4">
+                    <td data-label="Service" className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0E5AA7]/10 text-[#0E5AA7]">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0E5AA7]/10 text-[#0E5AA7]">
                           <CalendarDays size={18} />
                         </div>
                         <b className="text-sm text-[#0d1b2e]">
@@ -235,21 +235,21 @@ export default function Attendance() {
                         </b>
                       </div>
                     </td>
-                    <td className="p-4 text-sm text-[#526479]">
+                    <td data-label="Date" className="p-4 text-sm text-[#526479]">
                       {formatDate(item.serviceDate)}
                     </td>
-                    <td className="p-4 text-sm font-black text-[#0d1b2e]">
+                    <td data-label="Attendance" className="p-4 text-sm font-black text-[#0d1b2e]">
                       {item.attendeeCount}
                     </td>
-                    <td className="p-4 text-sm font-black text-[#0E5AA7]">
+                    <td data-label="Visitors" className="p-4 text-sm font-black text-[#0E5AA7]">
                       {item.visitorCount}
                     </td>
-                    <td className="max-w-xs p-4 text-sm text-[#6b7897]">
+                    <td data-label="Notes" className="max-w-xs p-4 text-sm text-[#6b7897]">
                       <span className="line-clamp-2">
                         {item.notes || "No notes"}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td data-actions="true" className="p-4">
                       <div className="flex justify-end gap-1">
                         <button
                           type="button"
@@ -350,14 +350,14 @@ function AttendanceDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[#04183a]/60 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[110] flex items-end justify-center overflow-y-auto bg-[#04183a]/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
       <form
         onSubmit={submit}
-        className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl"
+        className="max-h-[100dvh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-white p-4 shadow-2xl sm:max-h-[92vh] sm:rounded-3xl sm:p-6"
       >
         <div className="mb-5 flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-black text-[#0d1b2e]">
+          <div className="min-w-0">
+            <h2 className="text-lg font-black text-[#0d1b2e] sm:text-xl">
               {value ? "Edit attendance" : "Add attendance"}
             </h2>
             <p className="mt-1 text-sm text-[#6b7897]">
@@ -368,7 +368,7 @@ function AttendanceDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl bg-[#f0f4f9] px-3 py-2 text-sm font-bold text-[#6b7897]"
+            className="shrink-0 rounded-xl bg-[#f0f4f9] px-3 py-2 text-sm font-bold text-[#6b7897]"
           >
             Close
           </button>
@@ -437,18 +437,18 @@ function AttendanceDialog({
           </label>
         </div>
 
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl bg-[#f0f4f9] px-4 py-2.5 text-sm font-bold text-[#6b7897]"
+            className="rounded-xl bg-[#f0f4f9] px-4 py-2.5 text-center text-sm font-bold text-[#6b7897]"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={busy}
-            className="flex items-center gap-2 rounded-xl bg-[#0E5AA7] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60"
+            className="flex items-center justify-center gap-2 rounded-xl bg-[#0E5AA7] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60"
           >
             {busy && <Loader2 size={14} className="animate-spin" />}
             Save attendance

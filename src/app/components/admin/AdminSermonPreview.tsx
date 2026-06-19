@@ -11,14 +11,14 @@ export function AdminSermonPreview({ sermon, onClose }: { sermon: Sermon; onClos
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-end justify-center bg-[#04183a]/70 backdrop-blur-sm sm:items-center sm:p-6" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="max-h-[94vh] w-full max-w-4xl overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-6">
+    <div className="fixed inset-0 z-[120] flex items-end justify-center overflow-y-auto bg-[#04183a]/70 backdrop-blur-sm sm:items-center sm:p-6" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section className="max-h-[100dvh] w-full max-w-4xl overflow-y-auto rounded-t-3xl bg-white p-4 shadow-2xl sm:max-h-[94vh] sm:rounded-3xl sm:p-6">
         <header className="mb-5 flex items-start justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <div className="text-[10px] font-black uppercase tracking-widest text-[#0E5AA7]">Sermon Preview</div>
-            <h2 className="text-xl font-black text-[#0d1b2e]">{sermon.title}</h2>
+            <h2 className="text-lg font-black leading-tight text-[#0d1b2e] sm:text-xl">{sermon.title}</h2>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close sermon preview" className="rounded-xl bg-[#f0f4f9] p-2 text-[#6b7897]"><X size={17} /></button>
+          <button type="button" onClick={onClose} aria-label="Close sermon preview" className="shrink-0 rounded-xl bg-[#f0f4f9] p-2 text-[#6b7897]"><X size={17} /></button>
         </header>
         <SermonMediaPlayer sermon={sermon} />
       </section>

@@ -254,7 +254,7 @@ export function PublicActionDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-[#04183a]/70 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+      className="fixed inset-0 z-[100] flex items-end justify-center overflow-y-auto bg-[#04183a]/70 p-0 backdrop-blur-sm sm:items-center sm:p-6"
       onMouseDown={(mouseEvent) => {
         if (mouseEvent.target === mouseEvent.currentTarget) onClose();
       }}
@@ -263,14 +263,14 @@ export function PublicActionDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="public-dialog-title"
-        className={`max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-card shadow-2xl sm:rounded-3xl ${mode === "sermon" ? "max-w-4xl" : "max-w-2xl"}`}
+        className={`max-h-[100dvh] w-full overflow-y-auto rounded-t-3xl bg-card shadow-2xl sm:max-h-[92vh] sm:rounded-3xl ${mode === "sermon" ? "max-w-4xl" : "max-w-2xl"}`}
       >
-        <div className="sticky top-0 z-10 flex items-start justify-between border-b border-border bg-card/95 px-6 py-5 backdrop-blur-md sm:px-8">
-          <div>
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-border bg-card/95 px-4 py-4 backdrop-blur-md sm:px-8 sm:py-5">
+          <div className="min-w-0">
             <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-[#D7261E]">
               Liberty For Living
             </p>
-            <h2 id="public-dialog-title" className="text-2xl font-black text-card-foreground">
+            <h2 id="public-dialog-title" className="text-xl font-black leading-tight text-card-foreground sm:text-2xl">
               {title}
             </h2>
           </div>
@@ -278,13 +278,13 @@ export function PublicActionDialog({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="rounded-full bg-muted p-2.5 text-muted-foreground transition hover:text-foreground"
+            className="shrink-0 rounded-full bg-muted p-2.5 text-muted-foreground transition hover:text-foreground"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="p-6 sm:p-8">
+        <div className="p-4 sm:p-8">
           {mode === "visit" && (
             <form onSubmit={submitVisit} className="space-y-5">
               <p className="text-sm leading-relaxed text-muted-foreground">
@@ -370,14 +370,14 @@ export function PublicActionDialog({
                   href={getGoogleCalendarUrl(event)}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-border bg-[#f6fbff] px-5 py-3 text-sm font-bold text-[#0E5AA7] hover:border-[#0E5AA7] hover:bg-[#eef4fc] transition-colors"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-border bg-[#f6fbff] px-5 py-3 text-center text-sm font-bold text-[#0E5AA7] transition-colors hover:border-[#0E5AA7] hover:bg-[#eef4fc]"
                 >
                   <CalendarPlus size={16} />Add to Google Calendar
                 </a>
                 <a
                   href={getCalendarIcsUrl(event)}
                   download={`${event.title.replace(/[^a-zA-Z0-9-_ ]/g, "") || "event"}.ics`}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-border bg-white px-5 py-3 text-sm font-bold text-foreground hover:border-[#0E5AA7] hover:text-[#0E5AA7] transition-colors"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-border bg-white px-5 py-3 text-center text-sm font-bold text-foreground transition-colors hover:border-[#0E5AA7] hover:text-[#0E5AA7]"
                 >
                   <CalendarPlus size={16} />Download .ics
                 </a>

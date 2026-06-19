@@ -864,8 +864,8 @@ export default function Home() {
               Connect with Us
             </button>
           </div>
-          <div className="bg-[#eef4fc] dark:bg-[#111c30] rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
-            <div>
+          <div className="bg-[#eef4fc] dark:bg-[#111c30] rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div className="min-w-0">
               <div className="font-black text-foreground text-base">
                 Support the Ministry
               </div>
@@ -877,7 +877,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => openDialog("give")}
-              className="shrink-0 bg-[#D7261E] hover:bg-[#b81f19] text-white font-black px-7 py-3.5 rounded-full text-sm transition-colors shadow-md shadow-red-900/20 whitespace-nowrap"
+              className="w-full shrink-0 bg-[#D7261E] hover:bg-[#b81f19] text-white font-black px-7 py-3.5 rounded-full text-sm transition-colors shadow-md shadow-red-900/20 sm:w-auto"
             >
               Give Online
             </button>

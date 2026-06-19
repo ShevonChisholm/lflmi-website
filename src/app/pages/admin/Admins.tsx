@@ -122,8 +122,8 @@ export default function Admins() {
   };
 
   return (
-    <div className="p-5 lg:p-7">
-      <div className="mb-6 flex items-start justify-between gap-4">
+    <div className="p-4 lg:p-7">
+      <div className="mb-6 flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-start">
         <div>
           <h1 className="text-2xl font-black text-[#0d1b2e]">
             Administrators
@@ -136,7 +136,7 @@ export default function Admins() {
         <button
           type="button"
           onClick={() => setEditing(null)}
-          className="flex items-center gap-2 rounded-xl bg-[#0E5AA7] px-4 py-2.5 text-sm font-bold text-white"
+          className="flex items-center justify-center gap-2 rounded-xl bg-[#0E5AA7] px-4 py-2.5 text-sm font-bold text-white sm:w-auto"
         >
           <Plus size={16} />
           Create Admin
@@ -173,7 +173,7 @@ export default function Admins() {
           {filtered.map((profile) => (
             <article key={profile.id} className="rounded-3xl bg-white p-5 shadow-sm">
               <div className="flex items-start justify-between gap-4">
-                <div>
+                <div className="min-w-0">
                   <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0E5AA7]/10 text-[#0E5AA7]">
                     {profile.role === "SUPER_ADMIN" ? (
                       <ShieldCheck size={20} />
@@ -213,7 +213,7 @@ export default function Admins() {
                 ))}
               </div>
 
-              <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap sm:justify-end">
                 <button
                   type="button"
                   onClick={() => setEditing(profile)}
@@ -317,14 +317,14 @@ function AdminProfileDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[#04183a]/60 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[110] flex items-end justify-center overflow-y-auto bg-[#04183a]/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
       <form
         onSubmit={submit}
-        className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl"
+        className="max-h-[100dvh] w-full max-w-3xl overflow-y-auto rounded-t-3xl bg-white p-4 shadow-2xl sm:max-h-[92vh] sm:rounded-3xl sm:p-6"
       >
         <div className="mb-5 flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-black text-[#0d1b2e]">
+          <div className="min-w-0">
+            <h2 className="text-lg font-black text-[#0d1b2e] sm:text-xl">
               {isCreate ? "Create administrator" : "Edit administrator"}
             </h2>
             <p className="mt-1 text-sm text-[#6b7897]">
@@ -335,7 +335,7 @@ function AdminProfileDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl bg-[#f0f4f9] p-2 text-[#6b7897]"
+            className="shrink-0 rounded-xl bg-[#f0f4f9] p-2 text-[#6b7897]"
           >
             <X size={18} />
           </button>
@@ -417,31 +417,31 @@ function AdminProfileDialog({
                 type="button"
                 disabled={role === "SUPER_ADMIN"}
                 onClick={() => togglePermission(permission)}
-                className={`flex items-center gap-3 rounded-2xl border px-3 py-3 text-left text-sm font-bold disabled:cursor-not-allowed ${
+                className={`flex min-w-0 items-center gap-3 rounded-2xl border px-3 py-3 text-left text-sm font-bold disabled:cursor-not-allowed ${
                   effectivePermissions.includes(permission)
                     ? "border-[#0E5AA7] bg-[#0E5AA7]/10 text-[#0E5AA7]"
                     : "border-[#e8eef6] bg-white text-[#526479]"
                 }`}
               >
-                <CheckCircle size={16} />
+                <CheckCircle size={16} className="shrink-0" />
                 {adminPermissionLabels[permission]}
               </button>
             ))}
           </div>
         </section>
 
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl bg-[#f0f4f9] px-4 py-2.5 text-sm font-bold text-[#6b7897]"
+            className="rounded-xl bg-[#f0f4f9] px-4 py-2.5 text-center text-sm font-bold text-[#6b7897]"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={busy}
-            className="flex items-center gap-2 rounded-xl bg-[#0E5AA7] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60"
+            className="flex items-center justify-center gap-2 rounded-xl bg-[#0E5AA7] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60"
           >
             {busy && <Loader2 size={14} className="animate-spin" />}
             Save administrator
