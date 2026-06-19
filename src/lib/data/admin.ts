@@ -41,6 +41,8 @@ import type {
   EventUpdateInput,
   GivingProgramInput,
   GivingProgramUpdateInput,
+  GivingTransactionInput,
+  GivingTransactionUpdateInput,
   FollowUpInput,
   FollowUpUpdateInput,
   MemberInput,
@@ -282,6 +284,38 @@ const mapMinistryUpdate = (
   volunteer_count: input.volunteerCount,
   status: input.status,
   sort_order: input.sortOrder,
+});
+
+const mapGivingTransactionInsert = (
+  input: GivingTransactionInput,
+): TableInsert<"giving_transactions"> => ({
+  program_id: input.programId ?? null,
+  person_id: input.personId ?? null,
+  giver_name: input.isAnonymous ? null : input.giverName ?? null,
+  type: input.type ?? "DONATION",
+  amount: input.amount,
+  currency: input.currency ?? "JMD",
+  payment_method: input.paymentMethod ?? "OTHER",
+  received_at: input.receivedAt ?? new Date().toISOString(),
+  reference: input.reference ?? null,
+  is_anonymous: input.isAnonymous ?? false,
+  notes: input.notes ?? null,
+});
+
+const mapGivingTransactionUpdate = (
+  input: GivingTransactionUpdateInput,
+): TableUpdate<"giving_transactions"> => ({
+  program_id: input.programId,
+  person_id: input.personId,
+  giver_name: input.isAnonymous ? null : input.giverName,
+  type: input.type,
+  amount: input.amount,
+  currency: input.currency,
+  payment_method: input.paymentMethod,
+  received_at: input.receivedAt,
+  reference: input.reference,
+  is_anonymous: input.isAnonymous,
+  notes: input.notes,
 });
 
 const mapContentPageInsert = (
@@ -1138,6 +1172,45 @@ export const deleteGivingProgram = async (id: UUID): Promise<void> => {
   throwIfDataError(error, "Unable to delete giving program.");
 };
 
+const refreshGivingProgramAmount = async (
+  programId: UUID | null | undefined,
+): Promise<GivingProgram | null> => {
+  if (!programId) return null;
+
+  const { data: transactions, error: transactionError } = await supabase
+    .from("giving_transactions")
+    .select("amount")
+    .eq("program_id", programId);
+
+  throwIfDataError(transactionError, "Unable to refresh giving program total.");
+
+  const amountRaised = (transactions ?? []).reduce(
+    (total, transaction) => total + Number(transaction.amount ?? 0),
+    0,
+  );
+
+  const { data, error } = await supabase
+    .from("giving_programs")
+    .update({ amount_raised: amountRaised })
+    .eq("id", programId)
+    .select("*")
+    .single();
+
+  return mapGivingProgram(
+    requireData(data, error, "Unable to update giving program total."),
+  );
+};
+
+const refreshAffectedGivingPrograms = async (
+  ...programIds: Array<UUID | null | undefined>
+): Promise<void> => {
+  const uniqueProgramIds = Array.from(
+    new Set(programIds.filter((id): id is UUID => Boolean(id))),
+  );
+
+  await Promise.all(uniqueProgramIds.map(refreshGivingProgramAmount));
+};
+
 export const getGivingTransactions = async (): Promise<GivingTransaction[]> => {
   const { data, error } = await supabase
     .from("giving_transactions")
@@ -1145,4 +1218,66 @@ export const getGivingTransactions = async (): Promise<GivingTransaction[]> => {
     .order("received_at", { ascending: false });
   throwIfDataError(error, "Unable to load giving transactions.");
   return (data ?? []).map(mapGivingTransaction);
+};
+
+export const createGivingTransaction = async (
+  input: GivingTransactionInput,
+): Promise<GivingTransaction> => {
+  const { data, error } = await supabase
+    .from("giving_transactions")
+    .insert(mapGivingTransactionInsert(input))
+    .select("*")
+    .single();
+
+  const transaction = mapGivingTransaction(
+    requireData(data, error, "Unable to create giving transaction."),
+  );
+
+  await refreshAffectedGivingPrograms(transaction.programId);
+  return transaction;
+};
+
+export const updateGivingTransaction = async (
+  id: UUID,
+  input: GivingTransactionUpdateInput,
+): Promise<GivingTransaction> => {
+  const existing = await getGivingTransactionById(id);
+
+  const { data, error } = await supabase
+    .from("giving_transactions")
+    .update(mapGivingTransactionUpdate(input))
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  const transaction = mapGivingTransaction(
+    requireData(data, error, "Unable to update giving transaction."),
+  );
+
+  await refreshAffectedGivingPrograms(existing?.programId, transaction.programId);
+  return transaction;
+};
+
+export const deleteGivingTransaction = async (id: UUID): Promise<void> => {
+  const existing = await getGivingTransactionById(id);
+  const { error } = await supabase
+    .from("giving_transactions")
+    .delete()
+    .eq("id", id);
+
+  throwIfDataError(error, "Unable to delete giving transaction.");
+  await refreshAffectedGivingPrograms(existing?.programId);
+};
+
+export const getGivingTransactionById = async (
+  id: UUID,
+): Promise<GivingTransaction | null> => {
+  const { data, error } = await supabase
+    .from("giving_transactions")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  throwIfDataError(error, "Unable to load giving transaction.");
+  return data ? mapGivingTransaction(data) : null;
 };

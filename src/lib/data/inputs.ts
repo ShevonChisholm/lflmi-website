@@ -6,10 +6,12 @@ import type {
   EventRegistrationStatus,
   FollowUpStatus,
   FollowUpType,
+  GivingType,
   JsonValue,
   MeetingStatus,
   MemberStatus,
   MinistryStatus,
+  PaymentMethod,
   PlannedVisitStatus,
   PrayerRequestStatus,
   PrayerRequestUrgency,
@@ -255,6 +257,22 @@ export interface GivingProgramInput {
 }
 
 export type GivingProgramUpdateInput = Partial<GivingProgramInput>;
+
+export interface GivingTransactionInput {
+  programId?: UUID | null;
+  personId?: UUID | null;
+  giverName?: string | null;
+  type?: GivingType;
+  amount: number;
+  currency?: string;
+  paymentMethod?: PaymentMethod;
+  receivedAt?: string;
+  reference?: string | null;
+  isAnonymous?: boolean;
+  notes?: string | null;
+}
+
+export type GivingTransactionUpdateInput = Partial<GivingTransactionInput>;
 
 export interface ServiceTimeInput {
   dayOfWeek: string;
