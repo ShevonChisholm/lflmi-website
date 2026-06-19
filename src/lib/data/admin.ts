@@ -3,6 +3,7 @@ import type {
   ContactMessage,
   ChurchSettings,
   Event,
+  EventRegistration,
   GivingProgram,
   GivingTransaction,
   AttendanceRecord,
@@ -30,6 +31,7 @@ import type {
   ContactMessageUpdateInput,
   ChurchSettingsUpdateInput,
   EventInput,
+  EventRegistrationUpdateInput,
   EventUpdateInput,
   GivingProgramInput,
   GivingProgramUpdateInput,
@@ -57,6 +59,7 @@ import {
   mapContactMessage,
   mapChurchSettings,
   mapEvent,
+  mapEventRegistration,
   mapGivingProgram,
   mapGivingTransaction,
   mapAttendanceRecord,
@@ -190,6 +193,18 @@ const mapEventUpdate = (input: EventUpdateInput): TableUpdate<"events"> => ({
   max_attendees: input.maxAttendees,
   status: input.status,
   publication_status: input.publicationStatus,
+});
+
+const mapEventRegistrationUpdate = (
+  input: EventRegistrationUpdateInput,
+): TableUpdate<"event_registrations"> => ({
+  person_id: input.personId,
+  name: input.name,
+  email: input.email,
+  phone: input.phone,
+  attendee_count: input.attendeeCount,
+  status: input.status,
+  notes: input.notes,
 });
 
 const mapMinistryInsert = (
@@ -626,6 +641,55 @@ export const updateEvent = async (
 export const deleteEvent = async (id: UUID): Promise<void> => {
   const { error } = await supabase.from("events").delete().eq("id", id);
   throwIfDataError(error, "Unable to delete the event.");
+};
+
+export interface EventRegistrationListOptions extends AdminListOptions {
+  eventId?: UUID;
+}
+
+export const getEventRegistrations = async (
+  options: EventRegistrationListOptions = {},
+): Promise<EventRegistration[]> => {
+  let query = supabase
+    .from("event_registrations")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (options.eventId) {
+    query = query.eq("event_id", options.eventId);
+  }
+
+  if (options.limit) {
+    query = query.limit(options.limit);
+  }
+
+  const { data, error } = await query;
+  throwIfDataError(error, "Unable to load event registrations.");
+  return (data ?? []).map(mapEventRegistration);
+};
+
+export const updateEventRegistration = async (
+  id: UUID,
+  input: EventRegistrationUpdateInput,
+): Promise<EventRegistration> => {
+  const { data, error } = await supabase
+    .from("event_registrations")
+    .update(mapEventRegistrationUpdate(input))
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  return mapEventRegistration(
+    requireData(data, error, "Unable to update the event registration."),
+  );
+};
+
+export const deleteEventRegistration = async (id: UUID): Promise<void> => {
+  const { error } = await supabase
+    .from("event_registrations")
+    .delete()
+    .eq("id", id);
+  throwIfDataError(error, "Unable to delete the event registration.");
 };
 
 export const getMinistries = async (): Promise<Ministry[]> => {

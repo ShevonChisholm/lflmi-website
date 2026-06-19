@@ -2,6 +2,7 @@ import type {
   ContactMessage,
   ContentPage,
   Event,
+  EventRegistration,
   FollowUp,
   GivingProgram,
   GivingTransaction,
@@ -53,6 +54,22 @@ export const mapEvent = (row: TableRow<"events">): Event => ({
   maxAttendees: row.max_attendees,
   status: row.status as Event["status"],
   publicationStatus: row.publication_status as Event["publicationStatus"],
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapEventRegistration = (
+  row: TableRow<"event_registrations">,
+): EventRegistration => ({
+  id: row.id,
+  eventId: row.event_id,
+  personId: row.person_id,
+  name: row.name,
+  email: row.email,
+  phone: row.phone,
+  attendeeCount: row.attendee_count,
+  status: row.status as EventRegistration["status"],
+  notes: row.notes,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });

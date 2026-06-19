@@ -1,6 +1,7 @@
 import type {
   ContactMessageStatus,
   EventStatus,
+  EventRegistrationStatus,
   FollowUpStatus,
   FollowUpType,
   JsonValue,
@@ -72,6 +73,16 @@ export interface EventRegistrationInput {
   email?: string | null;
   phone?: string | null;
   attendeeCount?: number;
+  notes?: string | null;
+}
+
+export interface EventRegistrationUpdateInput {
+  personId?: UUID | null;
+  name?: string;
+  email?: string | null;
+  phone?: string | null;
+  attendeeCount?: number;
+  status?: EventRegistrationStatus;
   notes?: string | null;
 }
 
