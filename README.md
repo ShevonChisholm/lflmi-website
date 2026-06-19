@@ -40,11 +40,33 @@ variables when imported.
 ### Bible Reader
 
 A Bible reader page is available at `/bible`.
-It uses a Supabase Edge Function to keep the API.Bible key secret while
+It uses Supabase Edge Functions to keep the API.Bible key secret while
 supporting translation, book, chapter, and verse search.
 
-Set the edge function URL in your browser environment and keep the API key
-secure in server-side configuration.
+Set the browser-safe Edge Function URLs in your local `.env`:
+
+```env
+VITE_BIBLE_BIBLES_API_URL=https://your-project.supabase.co/functions/v1/your-bibles-function
+VITE_BIBLE_BOOKS_API_URL=https://your-project.supabase.co/functions/v1/your-books-function
+VITE_BIBLE_CHAPTERS_API_URL=https://your-project.supabase.co/functions/v1/your-chapters-function
+VITE_BIBLE_READER_API_URL=https://your-project.supabase.co/functions/v1/your-reader-function
+```
+
+The deployed functions should keep the API.Bible key in a Supabase secret:
+
+```bash
+supabase secrets set API_BIBLE_KEY=your-api-bible-key
+```
+
+The frontend expects the Bible functions to support these public contracts:
+
+- Translations: `GET VITE_BIBLE_BIBLES_API_URL`, returning an array or `{ data: array }`
+- Books: `GET VITE_BIBLE_BOOKS_API_URL?translation=<bibleId>`, returning an array or `{ data: array }`
+- Chapters: `GET VITE_BIBLE_CHAPTERS_API_URL?translation=<bibleId>&bookId=<bookId>`, returning an array or `{ data: array }`
+- Reader: `GET VITE_BIBLE_READER_API_URL?translation=<bibleId>&chapterId=<chapterId>`, returning `{ data: { reference, content, verses, copyright, fumsToken } }`
+
+Only the function URLs belong in `VITE_` variables. Never expose the API.Bible
+key in the Vite app.
 
 ### Create the database
 
@@ -81,7 +103,7 @@ Supabase Free projects allow at most 50 MB per file and include a limited total
 storage allowance. Use YouTube or Vimeo links for full sermon videos, and use
 compressed images and audio whenever possible.
 
-To load safe development records after applying both migrations, run
+To load safe development records after applying the migrations, run
 `supabase/seed.sql`. The seed file is idempotent and does not create admin
 accounts.
 
@@ -134,12 +156,12 @@ pnpm build
 
 ## Project structure
 
-- `src/` – application source files
-- `src/app/` – main app entry, routing, and page components
-- `src/app/components/` – UI components and shared helpers
-- `src/styles/` – global styles and theme configuration
-- `index.html` – Vite app entry page
-- `vite.config.ts` – Vite configuration
+- `src/` - application source files
+- `src/app/` - main app entry, routing, and page components
+- `src/app/components/` - UI components and shared helpers
+- `src/styles/` - global styles and theme configuration
+- `index.html` - Vite app entry page
+- `vite.config.ts` - Vite configuration
 
 ## Notes
 

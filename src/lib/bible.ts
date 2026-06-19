@@ -41,6 +41,49 @@ export interface BibleChapterOption {
   reference: string;
 }
 
+type BibleApiEnvelope<T> = {
+  data?: T;
+};
+
+type BibleReaderApiData = {
+  reference?: unknown;
+  content?: unknown;
+  verses?: unknown;
+  copyright?: unknown;
+  fumsToken?: unknown;
+};
+
+type BibleVerseApiData = {
+  verse?: unknown;
+  text?: unknown;
+  content?: unknown;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const unwrapData = <T>(body: unknown): T | unknown => {
+  if (isRecord(body) && "data" in body) {
+    return (body as BibleApiEnvelope<T>).data;
+  }
+
+  return body;
+};
+
+const toVerse = (value: unknown): BibleVerse | null => {
+  if (!isRecord(value)) return null;
+
+  const verse = value as BibleVerseApiData;
+  const verseNumber = Number(verse.verse);
+
+  if (!Number.isFinite(verseNumber)) return null;
+
+  return {
+    verse: verseNumber,
+    text: String(verse.text ?? verse.content ?? ""),
+  };
+};
+
 const getBibleReaderApiUrl = (): string | undefined =>
   publicEnv.bibleReaderApiUrl?.trim();
 
@@ -74,7 +117,7 @@ export const fetchBibleTranslations = async (): Promise<
   }
 
   const body = await response.json();
-  const data = body?.data ?? body;
+  const data = unwrapData<BibleTranslationOption[]>(body);
 
   return Array.isArray(data) ? data : [];
 };
@@ -103,7 +146,7 @@ export const fetchBibleBooks = async (
   }
 
   const body = await response.json();
-  const data = body?.data ?? body;
+  const data = unwrapData<BibleBookOption[]>(body);
 
   return Array.isArray(data) ? data : [];
 };
@@ -134,7 +177,7 @@ export const fetchBibleChapters = async (
   }
 
   const body = await response.json();
-  const data = body?.data ?? body;
+  const data = unwrapData<BibleChapterOption[]>(body);
 
   return Array.isArray(data) ? data : [];
 };
@@ -165,21 +208,28 @@ export const fetchBibleReader = async (
   }
 
   const body = await response.json();
-  const data = body?.data ?? body;
+  const data = unwrapData<BibleReaderApiData>(body);
+  const readerData = isRecord(data) ? (data as BibleReaderApiData) : {};
+  const verses = Array.isArray(readerData.verses)
+    ? readerData.verses.map(toVerse).filter((verse) => verse !== null)
+    : undefined;
 
   return {
-    reference: data?.reference ?? request.fallbackReference ?? request.chapterId,
-    html: data?.content ?? JSON.stringify(body),
-    verses: Array.isArray(data?.verses)
-      ? data.verses.map((verse: any) => ({
-          verse: Number(verse.verse),
-          text: String(verse.text ?? verse.content ?? ""),
-        }))
-      : undefined,
+    reference:
+      typeof readerData.reference === "string"
+        ? readerData.reference
+        : request.fallbackReference ?? request.chapterId,
+    html:
+      typeof readerData.content === "string"
+        ? readerData.content
+        : JSON.stringify(body),
+    verses,
     copyright:
-      typeof data?.copyright === "string" && data.copyright.trim().length > 0
-        ? data.copyright
+      typeof readerData.copyright === "string" &&
+      readerData.copyright.trim().length > 0
+        ? readerData.copyright
         : undefined,
-    fumsToken: data?.fumsToken ?? null,
+    fumsToken:
+      typeof readerData.fumsToken === "string" ? readerData.fumsToken : null,
   };
 };
