@@ -44,6 +44,7 @@ export const routePermissions: Record<string, AdminPermission> = {
   "/admin/prayer-requests": "MANAGE_CARE",
   "/admin/contact-messages": "MANAGE_CARE",
   "/admin/planned-visits": "MANAGE_CARE",
+  "/admin/attendance": "MANAGE_CARE",
   "/admin/sermons": "MANAGE_CMS",
   "/admin/events": "MANAGE_CMS",
   "/admin/ministries": "MANAGE_CMS",

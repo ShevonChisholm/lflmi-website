@@ -9,6 +9,7 @@ import PrayerRequests from "./pages/admin/PrayerRequests";
 import Sermons from "./pages/admin/Sermons";
 import Events from "./pages/admin/Events";
 import PlannedVisits from "./pages/admin/PlannedVisits";
+import Attendance from "./pages/admin/Attendance";
 import Members from "./pages/admin/Members";
 import Give from "./pages/admin/Give";
 import Ministries from "./pages/admin/Ministries";
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
       { path: "sermons", Component: Sermons },
       { path: "events", Component: Events },
       { path: "planned-visits", Component: PlannedVisits },
+      { path: "attendance", Component: Attendance },
       { path: "members", Component: Members },
       { path: "give", Component: Give },
       { path: "ministries", Component: Ministries },

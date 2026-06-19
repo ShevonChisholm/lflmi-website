@@ -30,6 +30,8 @@ import { requireData, throwIfDataError } from "./errors";
 import type {
   AdminProfileCreateInput,
   AdminProfileUpdateInput,
+  AttendanceRecordInput,
+  AttendanceRecordUpdateInput,
   ContentPageInput,
   ContentPageUpdateInput,
   ContactMessageUpdateInput,
@@ -91,6 +93,26 @@ const mapAdminProfileUpdate = (
   role: input.role,
   permissions: input.permissions,
   is_active: input.isActive,
+});
+
+const mapAttendanceRecordInsert = (
+  input: AttendanceRecordInput,
+): TableInsert<"attendance_records"> => ({
+  service_name: input.serviceName,
+  service_date: input.serviceDate,
+  attendee_count: input.attendeeCount ?? 0,
+  visitor_count: input.visitorCount ?? 0,
+  notes: input.notes ?? null,
+});
+
+const mapAttendanceRecordUpdate = (
+  input: AttendanceRecordUpdateInput,
+): TableUpdate<"attendance_records"> => ({
+  service_name: input.serviceName,
+  service_date: input.serviceDate,
+  attendee_count: input.attendeeCount,
+  visitor_count: input.visitorCount,
+  notes: input.notes,
 });
 
 const mapContactMessageUpdate = (
@@ -646,6 +668,45 @@ export const getAttendanceRecords = async (): Promise<AttendanceRecord[]> => {
   const { data, error } = await supabase.from("attendance_records").select("*").order("service_date", { ascending: true });
   throwIfDataError(error, "Unable to load attendance.");
   return (data ?? []).map(mapAttendanceRecord);
+};
+
+export const createAttendanceRecord = async (
+  input: AttendanceRecordInput,
+): Promise<AttendanceRecord> => {
+  const { data, error } = await supabase
+    .from("attendance_records")
+    .insert(mapAttendanceRecordInsert(input))
+    .select("*")
+    .single();
+
+  return mapAttendanceRecord(
+    requireData(data, error, "Unable to create attendance record."),
+  );
+};
+
+export const updateAttendanceRecord = async (
+  id: UUID,
+  input: AttendanceRecordUpdateInput,
+): Promise<AttendanceRecord> => {
+  const { data, error } = await supabase
+    .from("attendance_records")
+    .update(mapAttendanceRecordUpdate(input))
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  return mapAttendanceRecord(
+    requireData(data, error, "Unable to update attendance record."),
+  );
+};
+
+export const deleteAttendanceRecord = async (id: UUID): Promise<void> => {
+  const { error } = await supabase
+    .from("attendance_records")
+    .delete()
+    .eq("id", id);
+
+  throwIfDataError(error, "Unable to delete attendance record.");
 };
 
 export const getSermons = async (): Promise<Sermon[]> => {

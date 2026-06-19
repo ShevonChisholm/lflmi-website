@@ -4,7 +4,7 @@ import {
   LayoutDashboard, UserCheck, Heart, Mic2, Calendar,
   CalendarCheck, Users, HandCoins, Globe, Info,
   Settings, LogOut, Menu, Bell, Search, ChevronRight, MessagesSquare, Files,
-  ShieldCheck, Loader2, Lock,
+  ShieldCheck, Loader2, Lock, ClipboardList,
 } from "lucide-react";
 import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
 import logoImg from "@/imports/PHOTO-2025-11-20-06-26-28-removebg-preview.png";
@@ -26,6 +26,7 @@ const navItems = [
   { icon: Mic2, label: "Sermons", path: "/admin/sermons", permission: "MANAGE_CMS" },
   { icon: Calendar, label: "Events", path: "/admin/events", permission: "MANAGE_CMS" },
   { icon: CalendarCheck, label: "Planned Visits", path: "/admin/planned-visits", permission: "MANAGE_CARE" },
+  { icon: ClipboardList, label: "Attendance", path: "/admin/attendance", permission: "MANAGE_CARE" },
   { icon: Users, label: "Members", path: "/admin/members", permission: "MANAGE_MEMBERS" },
   { icon: HandCoins, label: "Give Programs", path: "/admin/give", permission: "MANAGE_GIVING" },
   { icon: Globe, label: "Ministries", path: "/admin/ministries", permission: "MANAGE_CMS" },
@@ -43,6 +44,7 @@ const pageTitles: Record<string, string> = {
   "/admin/sermons": "Sermons",
   "/admin/events": "Events",
   "/admin/planned-visits": "Planned Visits",
+  "/admin/attendance": "Attendance",
   "/admin/members": "Members",
   "/admin/give": "Give Programs",
   "/admin/ministries": "Ministries",

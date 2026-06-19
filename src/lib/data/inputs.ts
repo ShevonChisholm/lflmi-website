@@ -34,6 +34,16 @@ export interface AdminProfileCreateInput extends AdminProfileInput {
 
 export type AdminProfileUpdateInput = Partial<AdminProfileInput>;
 
+export interface AttendanceRecordInput {
+  serviceName: string;
+  serviceDate: string;
+  attendeeCount?: number;
+  visitorCount?: number;
+  notes?: string | null;
+}
+
+export type AttendanceRecordUpdateInput = Partial<AttendanceRecordInput>;
+
 export interface ContactMessageInput {
   name: string;
   email: string;
