@@ -68,6 +68,9 @@ export interface Database {
           vision: Nullable<string>;
           mission: Nullable<string>;
           founded_year: Nullable<number>;
+          public_member_count: Nullable<number>;
+          life_group_count: Nullable<number>;
+          nations_reached: Nullable<number>;
           senior_pastor: Nullable<string>;
           associate_pastor: Nullable<string>;
           logo_url: Nullable<string>;
@@ -87,6 +90,9 @@ export interface Database {
           vision?: Nullable<string>;
           mission?: Nullable<string>;
           founded_year?: Nullable<number>;
+          public_member_count?: Nullable<number>;
+          life_group_count?: Nullable<number>;
+          nations_reached?: Nullable<number>;
           senior_pastor?: Nullable<string>;
           associate_pastor?: Nullable<string>;
           logo_url?: Nullable<string>;

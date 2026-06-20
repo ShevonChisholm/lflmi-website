@@ -17,6 +17,7 @@ import {
   initialsForAdmin,
 } from "@/lib/admin-permissions";
 import type { AdminPermission, AdminProfile } from "@/types";
+import { ScrollToTopButton } from "@/app/components/public/ScrollToTopButton";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard", permission: "VIEW_DASHBOARD" },
@@ -297,6 +298,7 @@ export default function AdminLayout() {
           ) : (
             <AccessDenied />
           )}
+          <ScrollToTopButton />
         </main>
       </div>
     </div>

@@ -1,8 +1,5 @@
-import { useState, useEffect } from "react";
+import { useOutletContext } from "react-router";
 import {
-  Menu,
-  X,
-  ChevronRight,
   MapPin,
   Clock,
   Heart,
@@ -13,29 +10,13 @@ import {
   Globe,
   Play,
   ArrowRight,
+  ChevronRight,
   Phone,
-  Mail,
   AlertCircle,
   CalendarPlus,
 } from "lucide-react";
-import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
-import {
-  PublicActionDialog,
-  type PublicDialogMode,
-} from "@/app/components/public/PublicActionDialog";
-import { useHomeContent } from "@/app/hooks/useHomeContent";
+import type { PublicLayoutContextValue } from "@/app/layouts/PublicLayout";
 import { getGoogleCalendarUrl, getCalendarIcsUrl } from "@/lib/calendar";
-import logoImg from "@/imports/PHOTO-2025-11-20-06-26-28-removebg-preview.png";
-import type { Event, Ministry } from "@/types";
-
-const navLinks = [
-  { label: "About", href: "#about" },
-  { label: "Sermons", href: "#sermons" },
-  { label: "Ministries", href: "#ministries" },
-  { label: "Events", href: "#events" },
-  { label: "Give", href: "#give" },
-  { label: "Bible Reader", href: "/bible" },
-];
 
 const careItems = [
   {
@@ -80,6 +61,15 @@ const formatDate = (
       }).format(new Date(date))
     : "";
 
+const formatWholeNumber = (value: number | null | undefined) =>
+  new Intl.NumberFormat("en-US").format(value ?? 0);
+
+const formatCompactNumber = (value: number | null | undefined) =>
+  new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value ?? 0);
+
 const ministryIcon = (name: string) => {
   const normalized = name.toLowerCase();
   if (normalized.includes("child")) return Baby;
@@ -93,13 +83,6 @@ const ministryIcon = (name: string) => {
 };
 
 export default function Home() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [dialogMode, setDialogMode] = useState<PublicDialogMode | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [selectedMinistry, setSelectedMinistry] = useState<Ministry | null>(
-    null,
-  );
   const {
     serviceTimes: dynamicServiceTimes,
     latestSermon,
@@ -108,7 +91,10 @@ export default function Home() {
     churchSettings,
     isLoading,
     failedSections,
-  } = useHomeContent();
+    openDialog,
+    openEvent,
+    openMinistry,
+  } = useOutletContext<PublicLayoutContextValue>();
   const sundayServices = dynamicServiceTimes.filter(
     (service) => service.dayOfWeek === "Sunday",
   );
@@ -136,101 +122,13 @@ export default function Home() {
   const yearsActive = churchSettings.foundedYear
     ? new Date().getFullYear() - churchSettings.foundedYear
     : 20;
-  const socialLinks = Object.entries(churchSettings.socialLinks).filter(
-    (entry): entry is [string, string] => Boolean(entry[1]),
-  );
-  const openDialog = (mode: PublicDialogMode) => setDialogMode(mode);
-  const openEvent = (event: Event) => {
-    setSelectedEvent(event);
-    setDialogMode("event");
-  };
-  const openMinistry = (ministry: Ministry) => {
-    setSelectedMinistry(ministry);
-    setDialogMode("ministry");
-  };
+  const publicMemberCount = churchSettings.publicMemberCount ?? 0;
+  const lifeGroupCount = churchSettings.lifeGroupCount ?? 0;
+  const nationsReached = churchSettings.nationsReached ?? 0;
   const phoneHref = `tel:${churchSettings.phone?.replace(/[^\d+]/g, "") ?? "+18765550100"}`;
-  const emailHref = `mailto:${churchSettings.email ?? "hello@lflmi.org"}`;
-
-  useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
-  }, []);
 
   return (
-    <div
-      className="min-h-screen bg-background text-foreground overflow-x-hidden"
-      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-    >
-      {/* NAV */}
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/96 dark:bg-[#0a1220]/96 backdrop-blur-md shadow-sm" : "bg-transparent"}`}
-      >
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-16 lg:h-20">
-          <a href="/" className="shrink-0">
-            <div className="bg-white rounded-xl px-3 py-1.5 shadow-sm">
-              <ImageWithFallback
-                src={logoImg}
-                alt="Liberty For Living Ministries International"
-                className="h-8 lg:h-10 w-auto object-contain"
-              />
-            </div>
-          </a>
-          <nav className="hidden lg:flex items-center gap-7">
-            {navLinks.map((l) => (
-              <a
-                key={l.label}
-                href={l.href}
-                className={`text-sm font-semibold tracking-wide transition-colors hover:text-[#0E5AA7] ${scrolled ? "text-[#0d1b2e] dark:text-slate-200" : "text-white/90"}`}
-              >
-                {l.label}
-              </a>
-            ))}
-          </nav>
-          <div className="hidden lg:flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => openDialog("visit")}
-              className="bg-[#0E5AA7] hover:bg-[#0a4a8a] text-white text-sm font-bold px-5 py-2.5 rounded-full transition-colors shadow-md shadow-blue-900/20"
-            >
-              Plan Your Visit
-            </button>
-          </div>
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
-            className={`lg:hidden p-2 rounded-lg transition-colors ${scrolled ? "text-[#0d1b2e] dark:text-white hover:bg-slate-100 dark:hover:bg-white/10" : "text-white hover:bg-white/10"}`}
-          >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
-        </div>
-        {menuOpen && (
-          <div className="lg:hidden bg-white dark:bg-[#111c30] border-t border-border px-5 pb-6 pt-1 shadow-xl">
-            {navLinks.map((l) => (
-              <a
-                key={l.label}
-                href={l.href}
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center justify-between py-3.5 text-[#0d1b2e] dark:text-slate-200 font-semibold border-b border-border last:border-0"
-              >
-                {l.label}
-                <ChevronRight size={16} className="text-muted-foreground" />
-              </a>
-            ))}
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false);
-                openDialog("visit");
-              }}
-              className="mt-5 block w-full text-center bg-[#0E5AA7] text-white font-bold py-3.5 rounded-full shadow"
-            >
-              Plan Your Visit
-            </button>
-          </div>
-        )}
-      </header>
-
+    <>
       {/* HERO */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#04183a]">
         <img
@@ -526,7 +424,9 @@ export default function Home() {
                 </div>
               </div>
               <div className="absolute -top-4 -right-4 lg:-right-6 bg-[#D7261E] text-white rounded-2xl px-4 py-3 shadow-xl">
-                <div className="text-2xl font-black leading-none">5K+</div>
+                <div className="text-2xl font-black leading-none">
+                  {formatCompactNumber(publicMemberCount)}+
+                </div>
                 <div className="text-[10px] font-semibold opacity-80 mt-0.5">
                   Members
                 </div>
@@ -718,7 +618,9 @@ export default function Home() {
                 </div>
               </div>
               <div className="absolute -bottom-5 -left-5 bg-[#0E5AA7] text-white rounded-2xl px-5 py-4 shadow-xl">
-                <div className="text-3xl font-black leading-none">8</div>
+                <div className="text-3xl font-black leading-none">
+                  {formatWholeNumber(nationsReached)}
+                </div>
                 <div className="text-xs font-semibold opacity-80 mt-1">
                   Nations Reached
                 </div>
@@ -744,9 +646,9 @@ export default function Home() {
               </p>
               <div className="grid grid-cols-3 gap-4 mb-10 py-8 border-y border-border">
                 {[
-                  { num: "5,000+", label: "Members" },
-                  { num: "12", label: "Life Groups" },
-                  { num: "20+", label: "Years Active" },
+                  { num: `${formatWholeNumber(publicMemberCount)}+`, label: "Members" },
+                  { num: formatWholeNumber(lifeGroupCount), label: "Life Groups" },
+                  { num: `${formatWholeNumber(yearsActive)}+`, label: "Years Active" },
                 ].map((s) => (
                   <div key={s.label} className="text-center">
                     <div className="text-3xl lg:text-4xl font-black text-[#0E5AA7] leading-none">
@@ -885,158 +787,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-[#04183a] text-white pt-20 pb-8">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-12 pb-14 border-b border-white/10">
-            <div className="md:col-span-1">
-              <div className="bg-white rounded-xl px-3 py-1.5 inline-block mb-5">
-                <ImageWithFallback
-                  src={logoImg}
-                  alt="Liberty For Living Ministries International"
-                  className="h-10 w-auto object-contain"
-                />
-              </div>
-              <p className="text-white/45 text-sm leading-relaxed mb-6">
-                {churchSettings.tagline ??
-                  "Walking in freedom. Living in purpose. Together in Christ."}
-              </p>
-              <div className="space-y-2 text-white/45 text-xs">
-                <div className="flex items-start gap-2">
-                  <MapPin
-                    size={12}
-                    className="mt-0.5 shrink-0 text-[#D7261E]"
-                  />
-                  {churchSettings.address ?? "Kingston, Jamaica"}
-                </div>
-                <a
-                  href={phoneHref}
-                  className="flex items-center gap-2 hover:text-white"
-                >
-                  <Phone size={12} className="shrink-0 text-[#D7261E]" />
-                  {churchSettings.phone ?? "+1 876 555 0100"}
-                </a>
-                <a
-                  href={emailHref}
-                  className="flex items-center gap-2 hover:text-white"
-                >
-                  <Mail size={12} className="shrink-0 text-[#D7261E]" />
-                  {churchSettings.email ?? "hello@lflmi.org"}
-                </a>
-              </div>
-            </div>
-            {[
-              {
-                heading: "Explore",
-                links: [
-                  "About Us",
-                  "Our Leadership",
-                  "Sermons",
-                  "Events",
-                  "Ministries",
-                ],
-              },
-              {
-                heading: "Connect",
-                links: [
-                  "Plan a Visit",
-                  "Life Groups",
-                  "Prayer Request",
-                  "Volunteer",
-                  "Contact Us",
-                ],
-              },
-              {
-                heading: "Resources",
-                links: [
-                  "Bible Studies",
-                  "Devotionals",
-                  "Bible Reader",
-                  "Podcast",
-                  "Newsletter",
-                  "Give Online",
-                ],
-              },
-            ].map((col) => (
-              <div key={col.heading}>
-                <div className="text-[10px] font-black tracking-widest uppercase text-white/35 mb-5">
-                  {col.heading}
-                </div>
-                <ul className="space-y-3">
-                  {col.links.map((l) => (
-                    <li key={l}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (l.includes("Prayer")) openDialog("prayer");
-                          else if (l.includes("Visit")) openDialog("visit");
-                          else if (l.includes("Give")) openDialog("give");
-                          else if (l.includes("Event")) openDialog("events");
-                          else if (l.includes("Sermon")) openDialog("sermon");
-                          else if (l === "Bible Reader")
-                            window.location.href = "/bible";
-                          else if (
-                            l.includes("Ministr") ||
-                            l.includes("Life Groups") ||
-                            l.includes("Volunteer")
-                          )
-                            document
-                              .querySelector("#ministries")
-                              ?.scrollIntoView({ behavior: "smooth" });
-                          else if (
-                            l.includes("About") ||
-                            l.includes("Leadership")
-                          )
-                            document
-                              .querySelector("#about")
-                              ?.scrollIntoView({ behavior: "smooth" });
-                          else openDialog("contact");
-                        }}
-                        className="text-white/55 hover:text-white text-sm transition-colors font-medium"
-                      >
-                        {l}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8">
-            <p className="text-white/30 text-xs">
-              © 2025 Liberty For Living Ministries International. All rights
-              reserved.
-            </p>
-            <div className="flex items-center gap-5">
-              {socialLinks.map(([name, href]) => (
-                <a
-                  key={name}
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-white/35 hover:text-white text-xs font-semibold capitalize transition-colors"
-                >
-                  {name}
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
-      {dialogMode && (
-        <PublicActionDialog
-          key={`${dialogMode}-${selectedEvent?.id ?? ""}-${selectedMinistry?.id ?? ""}`}
-          mode={dialogMode}
-          onClose={() => setDialogMode(null)}
-          churchSettings={churchSettings}
-          serviceTimes={dynamicServiceTimes}
-          events={dynamicEvents}
-          event={selectedEvent}
-          ministry={selectedMinistry}
-          sermon={latestSermon}
-          onSelectEvent={openEvent}
-        />
-      )}
-    </div>
+    </>
   );
 }

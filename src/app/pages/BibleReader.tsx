@@ -23,6 +23,30 @@ import {
 
 const preferredBookName = "John";
 const preferredChapterNumber = "3";
+const bibleReaderStateKey = "lflmi:bible-reader-selection";
+
+interface PersistedBibleReaderSelection {
+  translation?: string;
+  bookId?: string;
+  chapterId?: string;
+}
+
+const readPersistedSelection = (): PersistedBibleReaderSelection => {
+  if (typeof window === "undefined") return {};
+
+  try {
+    const raw = window.localStorage.getItem(bibleReaderStateKey);
+    return raw ? (JSON.parse(raw) as PersistedBibleReaderSelection) : {};
+  } catch {
+    return {};
+  }
+};
+
+const persistSelection = (selection: PersistedBibleReaderSelection) => {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.setItem(bibleReaderStateKey, JSON.stringify(selection));
+};
 
 const normalize = (value: string | undefined | null) =>
   String(value ?? "")
@@ -54,20 +78,25 @@ const findPreferredChapter = (
 };
 
 export default function BibleReader() {
+  const [persistedSelection] = useState(readPersistedSelection);
   const [translations, setTranslations] = useState<BibleTranslationOption[]>(
     [],
   );
-  const [translation, setTranslation] = useState("");
+  const [translation, setTranslation] = useState(
+    persistedSelection.translation ?? "",
+  );
   const [translationsLoading, setTranslationsLoading] = useState(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
 
   const [books, setBooks] = useState<BibleBookOption[]>([]);
-  const [bookId, setBookId] = useState("");
+  const [bookId, setBookId] = useState(persistedSelection.bookId ?? "");
   const [booksLoading, setBooksLoading] = useState(false);
   const [booksError, setBooksError] = useState<string | null>(null);
 
   const [chapters, setChapters] = useState<BibleChapterOption[]>([]);
-  const [chapterId, setChapterId] = useState("");
+  const [chapterId, setChapterId] = useState(
+    persistedSelection.chapterId ?? "",
+  );
   const [chaptersLoading, setChaptersLoading] = useState(false);
   const [chaptersError, setChaptersError] = useState<string | null>(null);
 
@@ -112,6 +141,24 @@ export default function BibleReader() {
 
   const readerDisabled = !translation || !bookId || !chapterId || loading;
 
+  const handleTranslationChange = (nextTranslation: string) => {
+    setTranslation(nextTranslation);
+    setBooks([]);
+    setBookId("");
+    setChapters([]);
+    setChapterId("");
+    setResult(null);
+    setReaderError(null);
+  };
+
+  const handleBookChange = (nextBookId: string) => {
+    setBookId(nextBookId);
+    setChapters([]);
+    setChapterId("");
+    setResult(null);
+    setReaderError(null);
+  };
+
   useEffect(() => {
     let cancelled = false;
 
@@ -119,7 +166,6 @@ export default function BibleReader() {
       setTranslationsLoading(true);
       setTranslationError(null);
       setTranslations([]);
-      setTranslation("");
 
       try {
         const options = await fetchBibleTranslations();
@@ -129,7 +175,10 @@ export default function BibleReader() {
         setTranslations(options);
 
         if (options.length > 0) {
-          setTranslation(options[0].id);
+          const persistedTranslation = options.find(
+            (option) => option.id === persistedSelection.translation,
+          );
+          setTranslation(persistedTranslation?.id ?? options[0].id);
         } else {
           setTranslationError("No Bible translations were returned.");
         }
@@ -153,7 +202,7 @@ export default function BibleReader() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [persistedSelection.translation]);
 
   useEffect(() => {
     let cancelled = false;
@@ -186,7 +235,10 @@ export default function BibleReader() {
         setBooks(options);
 
         if (options.length > 0) {
-          const preferredBook = findPreferredBook(options);
+          const persistedBook = options.find(
+            (book) => book.id === persistedSelection.bookId,
+          );
+          const preferredBook = persistedBook ?? findPreferredBook(options);
           setBookId(preferredBook.id);
         } else {
           setBooksError("No books were returned for this Bible translation.");
@@ -211,7 +263,7 @@ export default function BibleReader() {
     return () => {
       cancelled = true;
     };
-  }, [translation]);
+  }, [persistedSelection.bookId, translation]);
 
   useEffect(() => {
     let cancelled = false;
@@ -227,7 +279,6 @@ export default function BibleReader() {
       setChaptersLoading(true);
       setChaptersError(null);
       setChapters([]);
-      setChapterId("");
       setReaderError(null);
       setResult(null);
 
@@ -239,14 +290,19 @@ export default function BibleReader() {
         setChapters(options);
 
         if (options.length > 0) {
+          const persistedChapter = options.find(
+            (chapter) => chapter.id === persistedSelection.chapterId,
+          );
           const isPreferredBook =
             normalize(selectedBook?.name) === normalize(preferredBookName) ||
             normalize(selectedBook?.nameLong) === normalize(preferredBookName);
 
-          const preferredChapter = findPreferredChapter(
-            options,
-            isPreferredBook ? preferredChapterNumber : "1",
-          );
+          const preferredChapter =
+            persistedChapter ??
+            findPreferredChapter(
+              options,
+              isPreferredBook ? preferredChapterNumber : "1",
+            );
 
           setChapterId(preferredChapter.id);
         } else {
@@ -272,7 +328,23 @@ export default function BibleReader() {
     return () => {
       cancelled = true;
     };
-  }, [translation, bookId, selectedBook?.name, selectedBook?.nameLong]);
+  }, [
+    persistedSelection.chapterId,
+    translation,
+    bookId,
+    selectedBook?.name,
+    selectedBook?.nameLong,
+  ]);
+
+  useEffect(() => {
+    if (!translation) return;
+
+    persistSelection({
+      translation,
+      bookId: bookId || undefined,
+      chapterId: chapterId || undefined,
+    });
+  }, [bookId, chapterId, translation]);
 
   const loadBible = useCallback(async () => {
     if (!translation || !chapterId) {
@@ -328,7 +400,7 @@ export default function BibleReader() {
     ) ?? [];
 
   return (
-    <main className="min-h-screen bg-background text-foreground py-10 px-4 sm:px-6 lg:px-8">
+    <div className="bg-background text-foreground py-10 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 rounded-3xl border border-border bg-card p-8 shadow-sm">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -353,7 +425,7 @@ export default function BibleReader() {
                 <Label htmlFor="translation">Translation</Label>
                 <Select
                   value={translation}
-                  onValueChange={setTranslation}
+                  onValueChange={handleTranslationChange}
                   disabled={translationsDisabled}
                 >
                   <SelectTrigger id="translation">
@@ -380,7 +452,7 @@ export default function BibleReader() {
                 <Label htmlFor="book">Book</Label>
                 <Select
                   value={bookId}
-                  onValueChange={setBookId}
+                  onValueChange={handleBookChange}
                   disabled={booksDisabled}
                 >
                   <SelectTrigger id="book">
@@ -598,6 +670,6 @@ export default function BibleReader() {
           </aside>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

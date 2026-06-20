@@ -102,6 +102,9 @@ export interface ChurchSettings extends TimestampedEntity {
   vision: string | null;
   mission: string | null;
   foundedYear: number | null;
+  publicMemberCount: number | null;
+  lifeGroupCount: number | null;
+  nationsReached: number | null;
   seniorPastor: string | null;
   associatePastor: string | null;
   logoUrl: string | null;
