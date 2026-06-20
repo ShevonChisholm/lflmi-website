@@ -18,6 +18,7 @@ const navLinks = [
   { label: "Events", href: "/#events" },
   { label: "Give", href: "/#give" },
   { label: "Bible Reader", href: "/bible" },
+  { label: "FAQ", href: "/faq" },
 ];
 
 interface PublicHeaderProps {

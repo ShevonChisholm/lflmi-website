@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router";
 import Home from "./pages/Home";
 import BibleReader from "./pages/BibleReader";
+import Faq from "./pages/Faq";
 import PublicLayout from "./layouts/PublicLayout";
 import Login from "./pages/admin/Login";
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "/", element: <Home /> },
       { path: "/bible", element: <BibleReader /> },
+      { path: "/faq", element: <Faq /> },
     ],
   },
   { path: "/admin/login", Component: Login },

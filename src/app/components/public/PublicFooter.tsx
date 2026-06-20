@@ -30,6 +30,7 @@ const footerColumns = [
       "Bible Studies",
       "Devotionals",
       "Bible Reader",
+      "FAQ",
       "Podcast",
       "Newsletter",
       "Give Online",
@@ -65,6 +66,7 @@ export function PublicFooter({
     else if (label.includes("Event")) onOpenDialog("events");
     else if (label.includes("Sermon")) onOpenDialog("sermon");
     else if (label === "Bible Reader") window.location.href = "/bible";
+    else if (label === "FAQ") window.location.href = "/faq";
     else if (
       label.includes("Ministr") ||
       label.includes("Life Groups") ||
