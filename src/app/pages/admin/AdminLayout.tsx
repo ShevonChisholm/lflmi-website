@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router";
 import {
   LayoutDashboard, UserCheck, Heart, Mic2, Calendar,
-  CalendarCheck, Users, HandCoins, Globe, Info,
+  CalendarCheck, Users, HandCoins, Globe,
   Settings, LogOut, Menu, Bell, Search, ChevronRight, MessagesSquare, Files,
   ShieldCheck, Loader2, Lock, ClipboardList,
 } from "lucide-react";
@@ -32,7 +32,7 @@ const navItems = [
   { icon: HandCoins, label: "Give Programs", path: "/admin/give", permission: "MANAGE_GIVING" },
   { icon: Globe, label: "Ministries", path: "/admin/ministries", permission: "MANAGE_CMS" },
   { icon: Files, label: "Content Pages", path: "/admin/content-pages", permission: "MANAGE_CMS" },
-  { icon: Info, label: "About", path: "/admin/about", permission: "MANAGE_CMS" },
+  { icon: Settings, label: "Site Settings", path: "/admin/about", permission: "MANAGE_CMS" },
   { icon: ShieldCheck, label: "Administrators", path: "/admin/admins", permission: "MANAGE_ADMINS" },
 ];
 
@@ -50,7 +50,7 @@ const pageTitles: Record<string, string> = {
   "/admin/give": "Give Programs",
   "/admin/ministries": "Ministries",
   "/admin/content-pages": "Content Pages",
-  "/admin/about": "About & Settings",
+  "/admin/about": "Site Settings",
 };
 
 export default function AdminLayout() {
@@ -217,11 +217,6 @@ export default function AdminLayout() {
 
         {/* Bottom */}
         <div className="border-t border-[#e8eef6] p-3 shrink-0 space-y-0.5">
-          {hasAdminPermission(currentAdmin, "MANAGE_CMS") && (
-            <button onClick={() => navigate("/admin/about")} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#6b7897] hover:bg-[#f0f4f9] hover:text-[#0d1b2e] transition-all w-full group">
-              <Settings size={18} />Settings
-            </button>
-          )}
           <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#D7261E]/70 hover:bg-[#D7261E]/8 hover:text-[#D7261E] transition-all w-full">
             <LogOut size={18} />Sign Out
           </button>
@@ -288,7 +283,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))]">
           {profileLoading ? (
             <div className="flex min-h-full items-center justify-center">
               <Loader2 className="animate-spin text-[#0E5AA7]" />

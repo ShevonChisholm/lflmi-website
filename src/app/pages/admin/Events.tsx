@@ -209,8 +209,8 @@ export default function Events() {
   };
 
   return (
-    <div className="p-5 lg:p-7">
-      <div className="mb-6 flex items-start justify-between gap-4">
+    <div className="p-4 lg:p-7">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-black text-[#0d1b2e]">Events</h1>
           <p className="mt-1 text-sm text-[#6b7897]">
@@ -222,15 +222,15 @@ export default function Events() {
         <button
           type="button"
           onClick={() => setEditing(null)}
-          className="flex items-center gap-2 rounded-xl bg-[#0E5AA7] px-4 py-2.5 text-sm font-bold text-white"
+          className="flex items-center justify-center gap-2 rounded-xl bg-[#0E5AA7] px-4 py-2.5 text-sm font-bold text-white"
         >
           <Plus size={16} />
           Create Event
         </button>
       </div>
 
-      <div className="mb-5 flex flex-wrap gap-3">
-        <div className="relative min-w-52 flex-1">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <div className="relative min-w-0 flex-1">
           <Search
             size={14}
             className="absolute left-3 top-3 text-[#6b7897]"
@@ -243,20 +243,22 @@ export default function Events() {
           />
         </div>
 
-        {eventStatuses.map((value) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setStatus(value)}
-            className={`rounded-xl px-3 py-2 text-xs font-semibold ${
-              status === value
-                ? "bg-[#0E5AA7] text-white"
-                : "bg-white text-[#6b7897]"
-            }`}
-          >
-            {value}
-          </button>
-        ))}
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          {eventStatuses.map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setStatus(value)}
+              className={`rounded-xl px-3 py-2 text-xs font-semibold ${
+                status === value
+                  ? "bg-[#0E5AA7] text-white"
+                  : "bg-white text-[#6b7897]"
+              }`}
+            >
+              {value}
+            </button>
+          ))}
+        </div>
       </div>
 
       {error && (
@@ -276,8 +278,8 @@ export default function Events() {
 
             return (
               <div key={item.id} className="rounded-2xl bg-white p-5 shadow-sm">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
                       <h3 className="font-black text-[#0d1b2e]">
                         {item.title}
@@ -330,7 +332,7 @@ export default function Events() {
                     </div>
                   </div>
 
-                  <div className="flex shrink-0 flex-wrap justify-end gap-1">
+                  <div className="flex shrink-0 flex-wrap justify-end gap-1 border-t border-[#e8eef6] pt-3 sm:border-t-0 sm:pt-0">
                     <button
                       type="button"
                       onClick={() => setRegistrationEvent(item)}

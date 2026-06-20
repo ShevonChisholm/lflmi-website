@@ -249,19 +249,16 @@
     }
 
     .responsive-admin-table td {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 0.75rem 1rem;
-      text-align: right;
+      display: block;
+      padding: 0.85rem 1rem;
+      text-align: left;
       white-space: normal;
     }
 
     .responsive-admin-table td::before {
       content: attr(data-label);
-      flex: 0 0 auto;
-      max-width: 45%;
+      display: block;
+      margin-bottom: 0.35rem;
       text-align: left;
       font-size: 0.68rem;
       font-weight: 800;
@@ -271,7 +268,9 @@
     }
 
     .responsive-admin-table td[data-actions="true"] {
+      display: flex;
       justify-content: flex-end;
+      padding-top: 0.25rem;
     }
 
     .responsive-admin-table td[data-actions="true"]::before {
